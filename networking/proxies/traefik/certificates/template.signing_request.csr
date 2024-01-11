@@ -1,0 +1,2 @@
+2. Create a Certificate Signing Request:
+openssl req -new -key template.key -out template.csr

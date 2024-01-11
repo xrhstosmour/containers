@@ -1,0 +1,2 @@
+3. Generate a Self-Signed Certificate:
+openssl req -x509 -sha256 -nodes -days 730 -key template.key -in template.csr -out template.crt -extensions v3_req -config <(cat /etc/ssl/openssl.cnf <(printf "\n[ v3_req ]\nsubjectAltName=DNS:template.com,DNS:www.template.com"))

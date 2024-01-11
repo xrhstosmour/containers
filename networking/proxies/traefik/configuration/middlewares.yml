@@ -1,0 +1,69 @@
+http:
+  middlewares:
+    # Basic authentication middleware.
+    basic_authentication_middleware:
+      basicAuth:
+        usersFile: "/run/secrets/htpasswd"
+        realm: "Proxy Basic Authentication"
+
+    # Rate limit middleware.
+    rate_limit_middleware:
+      rateLimit:
+        average: 100
+        burst: 50
+
+    # HTTPS redirect middleware.
+    https_redirect_middleware:
+      redirectScheme:
+        scheme: "https"
+        permanent: true
+
+    # Security headers middleware.
+    security_headers_middleware:
+      headers:
+        accessControlAllowMethods:
+          - "GET"
+          - "PUT"
+          - "POST"
+          - "PATCH"
+          - "DELETE"
+          - "OPTIONS"
+        accessControlMaxAge: 100
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        stsSeconds: 63072000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        frameDeny: true
+        contentSecurityPolicy: "script-src 'self'"
+        addVaryheader: true
+        # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+        customFrameOptionsValue: "SAMEORIGIN"
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: "same-origin"
+        # referrerPolicy: "origin-when-cross-origin"
+        permissionsPolicy: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), vr=(), vibrate=(self), midi=(self), notifications=(self), push=(self)"
+        customResponseHeaders:
+          X-Permitted-Cross-Domain-Policies: none
+          # expect-ct: "max-age=604800, report-uri='https://oak.ct.letsencrypt.org/2021'"
+          # Disable search engines from indexing home server
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex,"
+          # Hide server info from visitors.
+          server: ""
+          x-powered-by: ""
+
+    # Compress middleware.
+    compress_middleware:
+      compress: {}
+
+    # Buffering middleware.
+    # https://stackoverflow.com/questions/49717670/how-to-config-upload-body-size-restriction-in-traefik
+    buffering_middleware:
+      buffering:
+        maxResponseBodyBytes: 2000000
+        maxRequestBodyBytes: 10485760
+        memRequestBodyBytes: 2097152
+        memResponseBodyBytes: 2097152
+        retryExpression: "IsNetworkError() && Attempts() <= 2"

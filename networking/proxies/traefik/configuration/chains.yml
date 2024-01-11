@@ -1,0 +1,11 @@
+http:
+  middlewares:
+    # Basic authentication chains.
+    basic_authentication_chain:
+      chain:
+        middlewares:
+          - "rate_limit_middleware"
+          - "https_redirect_middleware"
+          - "security_headers_middleware"
+          - "basic_authentication_middleware"
+          - "compress_middleware"

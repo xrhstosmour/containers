@@ -1,0 +1,94 @@
+version: "3.9"
+
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+secrets:
+  htpasswd:
+    file: "./secrets/.htpasswd"
+
+services:
+  traefik:
+    image: "traefik:latest"
+    container_name: "traefik"
+    restart: "unless-stopped"
+    security_opt:
+      - "no-new-privileges:true"
+    networks:
+      - "internal"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "${PORT?Variable not set}:${PORT?Variable not set}"
+    command:
+      # TODO: Move all these commands to a dynamic .yml file.
+      # Configure the application.
+      - "--global.checkNewVersion=true"
+      - "--global.sendAnonymousUsage=false"
+      # Configure logging.
+      - "--log=true"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--accessLog.bufferingSize=100"
+      - "--accessLog.filters.statusCodes=204-299,400-499,500-599"
+      # Configure the API.
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      # Define docker provider.
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Define entrypoints.
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web_secure.address=:443"
+      # Add forwarded headers.
+      - "--entryPoints.web.forwardedHeaders.insecure"
+      - "--entryPoints.web_secure.forwardedHeaders.insecure"
+      # Configure TLS/SSL.
+      - "--serverstransport.insecureskipverify=true"
+      # Uncomment the below lines to enable TLS/SSL from a certificate resolver if you are not going to use existing certificates.
+      # - "--certificatesresolvers.le.acme.email=${EMAIL?Variable not set}"
+      # - "--certificatesresolvers.le.acme.storage=/certificates/acme.json"
+      # - "--certificatesResolvers.le.acme.tlsChallenge=true"
+      # Load dynamic configuration from one or more .yml files.
+      - "--providers.file=true"
+      - "--providers.file.watch=true"
+      - "--providers.file.directory=/configuration"
+      # Add a custom unique ID on every request.
+      - "--tracing.jaeger=true"
+      - "--tracing.jaeger.samplingParam=0"
+      - "--tracing.jaeger.traceContextHeaderName=X-Request-ID"
+    volumes:
+      # Allows Traefik can listen to the Docker events.
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      # Mount the dynamic configuration folder.
+      - "./configuration:/configuration"
+      # Mount the volume for certificates.
+      - "./certificates:/certificates"
+    environment:
+      - "TZ=${TIMEZONE?Variable not set}"
+      - "HTPASSWD_FILE=/run/secrets/htpasswd"
+    secrets:
+      - "htpasswd"
+    labels:
+      # Default traefik configuration.
+      - "traefik.enable=true"
+      - "traefik.docker.network=internal"
+      - "traefik.http.routers.traefik.rule=Host(`${HOST?Variable not set}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      # SSL/TLS configuration.
+      - "traefik.http.routers.traefik.entrypoints=web_secure"
+      - "traefik.http.routers.traefik.tls=true"
+      # Uncomment the below line to enable TLS/SSL from a certificate resolver.
+      # - "traefik.http.routers.traefik.tls.certresolver=${CERTIFICATE_RESOLVER?Variable not set}"
+      # Middleware for basic authentication to the dashboard.
+      - "traefik.http.routers.traefik.middlewares=basic_authentication_chain@file"
+      # Middleware for global redirection to https with middleware.
+      - "traefik.http.routers.http_catch_all.entrypoints=web"
+      - "traefik.http.routers.http_catch_all.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http_catch_all.middlewares=https_redirect_middleware"
+      - "traefik.http.middlewares.https_redirect_middleware.redirectscheme.scheme=https"
+      # TODO: Middleware to redirect from www.
