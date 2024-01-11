@@ -1,0 +1,33 @@
+# TODO: Use Secrets to store the passwords to all containers.
+# TODO: Monitor and update to latest version.
+# TODO: Implement Traefik labels for reverse proxy, even in local network.
+version: "3.9"
+
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+volumes:
+  pgadmin4:
+    name: "pgadmin4"
+
+services:
+  pgadmin4:
+    image: "dpage/pgadmin4"
+    container_name: "pgadmin4"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    ports:
+      - "${PGADMIN4_PORT?Variable not set}:${PGADMIN4_PORT?Variable not set}"
+    volumes:
+      - "pgadmin4:/var/lib/pgadmin"
+    environment:
+      - "PGADMIN_DEFAULT_EMAIL=${PGADMIN4_EMAIL?Variable not set}"
+      - "PGADMIN_DEFAULT_PASSWORD=${PGADMIN4_PASSWORD?Variable not set}"
+      - "PGADMIN_LISTEN_PORT=${PGADMIN4_PORT?Variable not set}"
+    labels:
+      - "traefik.enable=false"
