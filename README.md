@@ -18,7 +18,7 @@ docker network create internal
 
 **Configuration Files**:
 
-Identify files with the 'template.' prefix in the desired container folders. Eliminate this prefix from each of these files and proceed to make any required adjustments.
+Identify files with the 'template.' prefix in the desired container folders. Eliminate this prefix from each of these files and proceed to make any required adjustments. Do not forget to edit the files inside the configuration folders, according to your needs.
 
 ---
 
