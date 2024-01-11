@@ -1,0 +1,29 @@
+# TODO: Use Secrets to store the passwords to all containers.
+# TODO: Implement Traefik labels for reverse proxy, even in local network.
+version: "3.9"
+
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same local network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+services:
+  redis-commander:
+    image: "ghcr.io/joeferner/redis-commander:latest"
+    container_name: "redis-commander"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    ports:
+      - "${REDIS_COMMANDER_PORT?Variable not set}:8081"
+    environment:
+      - "HTTP_USER=${REDIS_COMMANDER_USER?Variable not set}"
+      - "HTTP_PASSWORD=${REDIS_COMMANDER_PASSWORD?Variable not set}"
+      # We need the redis environment variables otherwise the container does not boot.
+      - "REDIS_HOST=redis"
+      - "REDIS_PORT=${REDIS_PORT?Variable not set}"
+      - "REDIS_PASSWORD=${REDIS_PASSWORD?Variable not set}"
+    labels:
+      - "traefik.enable=false"
