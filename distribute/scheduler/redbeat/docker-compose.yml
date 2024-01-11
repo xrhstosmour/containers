@@ -1,0 +1,55 @@
+# TODO: Use Secrets to store the passwords to all containers.
+# TODO: Create an image for the scheduler, and store it in a registry.
+version: "3.9"
+
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+services:
+  redbeat:
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    container_name: "redbeat"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    command:
+      [
+        "/app/scripts/wait-for-it.sh",
+        "${RABBITMQ_HOST?Variable not set}:${RABBITMQ_PORT?Variable not set}",
+        "--strict",
+        "--timeout=300",
+        "--",
+        "/app/scripts/wait-for-it.sh",
+        "${REDIS_HOST?Variable not set}:${REDIS_PORT?Variable not set}",
+        "--strict",
+        "--timeout=300",
+        "--",
+        "celery",
+        "-A",
+        "app.main",
+        "beat",
+        "-S",
+        "redbeat.RedBeatScheduler",
+        "-l",
+        "info",
+      ]
+    environment:
+      - "REDIS_HOST=${REDIS_HOST?Variable not set}"
+      - "REDIS_PASSWORD=${REDIS_PASSWORD?Variable not set}"
+      - "REDIS_PORT=${REDIS_PORT?Variable not set}"
+      - "REDIS_DATABASE=${REDIS_DATABASE?Variable not set}"
+      - "RABBITMQ_HOST=${RABBITMQ_HOST?Variable not set}"
+      - "RABBITMQ_USER=${RABBITMQ_USER?Variable not set}"
+      - "RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD?Variable not set}"
+      - "RABBITMQ_PORT=${RABBITMQ_PORT?Variable not set}"
+      - "REDBEAT_LOCK_KEY=${REDBEAT_LOCK_KEY:-redbeat:lock}"
+      - "REDBEAT_LOCK_TIMEOUT=${REDBEAT_LOCK_TIMEOUT:-1500}"
+      - "REDBEAT_MAXIMUM_INTERVAL=${REDBEAT_MAXIMUM_INTERVAL:-300}"
+    labels:
+      - "traefik.enable=false"
