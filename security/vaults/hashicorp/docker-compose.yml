@@ -1,0 +1,39 @@
+# TODO: Use Secrets to store the passwords to all containers.
+# TODO: Monitor and update to latest version.
+# TODO: Add extra performance configuration, using https://pgtune.leopard.in.ua/#/.
+version: "3.9"
+
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+volumes:
+  hashicorp_configuration:
+    name: "hashicorp_configuration"
+  hashicorp_logs:
+    name: "hashicorp_logs"
+  hashicorp_file:
+    name: "hashicorp_file"
+
+services:
+  hashicorp:
+    image: "hashicorp/vault"
+    container_name: "hashicorp"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    cap_add:
+      - "IPC_LOCK"
+    ports:
+      - "${HASHICORP_PORT?Variable not set}:${HASHICORP_PORT?Variable not set}"
+    volumes:
+      - "hashicorp_configuration:/vault/config"
+      - "hashicorp_logs:/vault/logs"
+      - "hashicorp_file:/vault/file"
+    environment:
+      - "VAULT_ADDR=http://0.0.0.0:${HASHICORP_PORT?Variable not set}"
+    labels:
+      - "traefik.enable=false"
