@@ -1,0 +1,43 @@
+# Docker Compose logs and temporary files
+*.log
+
+# Docker volume data or temporary files.
+*.tmp
+*.bak
+
+# OS generated files.
+.DS_Store       # MacOS folder config file
+.DS_Store?      # MacOS folder config file
+._*             # MacOS icon file
+.Spotlight-V100 # MacOS spotlight indexing file
+.Trashes        # MacOS trash folder
+Thumbs.db       # Windows image file cache
+ehthumbs.db     # Windows image file cache
+Desktop.ini     # Windows explorer config file
+
+# Text editor/IDE files.
+*.swo       # Vim state
+*.swp       # Vim state
+*.state     # IntelliJ
+.idea/      # PyCharm and other JetBrains IDEs
+.vscode/    # Visual Studio Code
+*.sublime-* # Sublime Text
+
+# Python generated files.
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Ignore all .env, .key, .csr, .crt, and .htpasswd files in any directory
+**/*.env
+**/*.key
+**/*.csr
+**/*.crt
+**/*.htpasswd
+
+# But re-include the ones that start with "template" in any directory
+!**/template*.env
+!**/template*.key
+!**/template*.csr
+!**/template*.crt
+!**/template*.htpasswd
