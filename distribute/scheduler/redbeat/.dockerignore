@@ -38,12 +38,13 @@ Makefile
 README.md
 LICENSE
 
-# Ignore all .env, .key, .csr, .crt, and .htpasswd files in any directory
+# Ignore all .env, .key, .csr, .crt, .htpasswd and .pem files in any directory
 **/*.env
 **/*.key
 **/*.csr
 **/*.crt
 **/*.htpasswd
+**/*.pem
 
 # But re-include the ones that start with "template" in any directory
 !**/template*.env
@@ -51,6 +52,7 @@ LICENSE
 !**/template*.csr
 !**/template*.crt
 !**/template*.htpasswd
+!**/template*.pem
 
 # Configuration files.
 **/configuration/*
