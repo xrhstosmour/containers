@@ -23,7 +23,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "${PORT?Variable not set}:${PORT?Variable not set}"
+      - "${TRAEFIK_PORT?Variable not set}:${TRAEFIK_PORT?Variable not set}"
     command:
       # TODO: Move all these commands to a dynamic .yml file.
       # Configure the application.
@@ -50,7 +50,7 @@ services:
       # Configure TLS/SSL.
       - "--serverstransport.insecureskipverify=true"
       # Uncomment the below lines to enable TLS/SSL from a certificate resolver if you are not going to use existing certificates.
-      # - "--certificatesresolvers.le.acme.email=${EMAIL?Variable not set}"
+      # - "--certificatesresolvers.le.acme.email=${TRAEFIK_EMAIL?Variable not set}"
       # - "--certificatesresolvers.le.acme.storage=/certificates/acme.json"
       # - "--certificatesResolvers.le.acme.tlsChallenge=true"
       # Load dynamic configuration from one or more .yml files.
@@ -77,13 +77,13 @@ services:
       # Default traefik configuration.
       - "traefik.enable=true"
       - "traefik.docker.network=internal"
-      - "traefik.http.routers.traefik.rule=Host(`${HOST?Variable not set}`)"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOST?Variable not set}`)"
       - "traefik.http.routers.traefik.service=api@internal"
       # SSL/TLS configuration.
       - "traefik.http.routers.traefik.entrypoints=web_secure"
       - "traefik.http.routers.traefik.tls=true"
       # Uncomment the below line to enable TLS/SSL from a certificate resolver.
-      # - "traefik.http.routers.traefik.tls.certresolver=${CERTIFICATE_RESOLVER?Variable not set}"
+      # - "traefik.http.routers.traefik.tls.certresolver=${TRAEFIK_CERTIFICATE_RESOLVER?Variable not set}"
       # Middleware for basic authentication to the dashboard.
       - "traefik.http.routers.traefik.middlewares=basic_authentication_chain@file"
       # Middleware for global redirection to https with middleware.
