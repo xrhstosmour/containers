@@ -25,6 +25,7 @@ services:
       - "${POSTGRESQL_PORT?Variable not set}:${POSTGRESQL_PORT?Variable not set}"
     volumes:
       - "postgresql:/var/lib/postgresql/data"
+      - "./configuration/postgresql.conf:/etc/postgresql.conf"
     environment:
       - "POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD?Variable not set}"
       - "POSTGRES_USER=${POSTGRESQL_USER?Variable not set}"
