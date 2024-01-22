@@ -1,0 +1,40 @@
+# More help:
+# https://github.com/vaggeliskls/windows-in-docker-container
+# https://dev.to/vaggeliskls/windows-vm-inside-a-linux-docker-container-54ol
+version: "3.9"
+
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+volumes:
+  windows:
+    name: "windows"
+
+services:
+  windows10:
+    image: "ghcr.io/vaggeliskls/windows-in-docker-container:latest"
+    stdin_open: true
+    tty: true
+    privileged: true
+    networks:
+      - "internal"
+    cap_add:
+      - "NET_ADMIN"
+      - "SYS_ADMIN"
+    volumes:
+      - "windows:/sys/fs/cgroup"
+    devices:
+      - "/dev/kvm"
+      - "/dev/net/tun"
+    ports:
+      - "${REMOTE_CONNECTION_PORT?Variable not set}:${REMOTE_CONNECTION_PORT?Variable not set}"
+    environment:
+      - "MEMORY=${MEMORY?Variable not set}"
+      - "CPU=${CPU?Variable not set}"
+      - "DISK_SIZE=${DISK_SIZE?Variable not set}"
+    labels:
+      - "traefik.enable=false"
