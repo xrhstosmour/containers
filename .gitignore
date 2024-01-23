@@ -28,11 +28,12 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 
-# Ignore all .env, .key, .csr, .crt and .htpasswd files in any directory
+# Ignore all .env, .key, .csr, .crt, .pem and .htpasswd files in any directory
 **/*.env
 **/*.key
 **/*.csr
 **/*.crt
+**/*.pem
 **/*.htpasswd
 
 # But re-include the ones that start with "template" in any directory
@@ -40,4 +41,5 @@ __pycache__/
 !**/template*.key
 !**/template*.csr
 !**/template*.crt
+!**/template*.pem
 !**/template*.htpasswd
