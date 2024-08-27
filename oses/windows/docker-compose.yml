@@ -1,8 +1,6 @@
 # More help:
 # https://github.com/vaggeliskls/windows-in-docker-container
 # https://dev.to/vaggeliskls/windows-vm-inside-a-linux-docker-container-54ol
-version: "3.9"
-
 networks:
   internal:
     name: "internal"

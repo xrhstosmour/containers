@@ -1,8 +1,6 @@
 # TODO: Use Secrets to store the passwords to all containers.
 # TODO: Monitor and update to latest version.
 # TODO: Add extra performance configuration, using https://pgtune.leopard.in.ua/#/.
-version: "3.9"
-
 networks:
   internal:
     name: "internal"

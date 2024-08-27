@@ -2,8 +2,6 @@
 # TODO: Monitor and update to latest version.
 # TODO: Implement SSL encryption for the connection. Help here: https://stackoverflow.com/questions/60253058/how-to-set-up-a-docker-redis-container-with-ssl.
 # TODO: Enable memory overcommit.
-version: "3.9"
-
 networks:
   internal:
     name: "internal"

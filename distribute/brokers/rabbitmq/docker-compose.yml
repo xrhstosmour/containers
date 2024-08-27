@@ -3,8 +3,6 @@
 # TODO: Implement Traefik labels for reverse proxy, even in local network.
 # TODO: Use a custom RABBITMQ_ERLANG_COOKIE.
 # TODO: Create self signed certificates the same way as all the containers using them.
-version: "3.9"
-
 networks:
   internal:
     name: "internal"
