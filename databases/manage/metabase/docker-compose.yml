@@ -1,0 +1,28 @@
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+volumes:
+  metabase:
+    name: "metabase"
+
+services:
+  metabase:
+    image: "metabase/metabase:v0.50"
+    container_name: "metabase"
+    restart: "unless-stopped"
+    depends_on:
+      - "postgresql"
+    networks:
+      - "internal"
+    ports:
+      - "3000:3000"
+    volumes:
+      - "metabase:/metabase-data"
+    environment:
+      - "MB_DB_FILE=${MB_DB_FILE?Variable not set}"
+    labels:
+      - "traefik.enable=false"
