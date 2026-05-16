@@ -9,9 +9,11 @@ networks:
 
 services:
   redis-commander:
-    image: "ghcr.io/joeferner/redis-commander:latest"
+    image: "ghcr.io/joeferner/redis-commander:0.8.0"
     container_name: "redis-commander"
     restart: "unless-stopped"
+    depends_on:
+      - "redis"
     networks:
       - "internal"
     ports:
