@@ -11,7 +11,7 @@ secrets:
 
 services:
   traefik:
-    image: "traefik:latest"
+    image: "traefik:v3"
     container_name: "traefik"
     restart: "unless-stopped"
     security_opt:
@@ -23,7 +23,6 @@ services:
       - "443:443"
       - "${TRAEFIK_PORT?Variable not set}:${TRAEFIK_PORT?Variable not set}"
     command:
-      # TODO: Move all these commands to a dynamic .yml file.
       # Configure the application.
       - "--global.checkNewVersion=true"
       - "--global.sendAnonymousUsage=false"
@@ -55,10 +54,6 @@ services:
       - "--providers.file=true"
       - "--providers.file.watch=true"
       - "--providers.file.directory=/configuration"
-      # Add a custom unique ID on every request.
-      - "--tracing.jaeger=true"
-      - "--tracing.jaeger.samplingParam=0"
-      - "--tracing.jaeger.traceContextHeaderName=X-Request-ID"
     volumes:
       # Allows Traefik can listen to the Docker events.
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
