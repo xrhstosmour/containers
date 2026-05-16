@@ -1,5 +1,4 @@
 # TODO: Use Secrets to store the passwords to all containers.
-# TODO: Monitor and update to latest version.
 # TODO: Implement Traefik labels for reverse proxy, even in local network.
 # TODO: Use a custom RABBITMQ_ERLANG_COOKIE.
 # TODO: Create self signed certificates the same way as all the containers using them.
@@ -16,8 +15,13 @@ volumes:
 
 services:
   rabbitmq:
-    image: "rabbitmq:3.12.12-management"
+    image: "rabbitmq:3.13-management-alpine"
     container_name: "rabbitmq"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: "10s"
+      timeout: "5s"
+      retries: 5
     restart: "unless-stopped"
     networks:
       - "internal"
