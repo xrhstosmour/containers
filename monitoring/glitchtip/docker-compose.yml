@@ -1,0 +1,46 @@
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+services:
+  glitchtip:
+    image: "glitchtip/glitchtip:v4.0"
+    container_name: "glitchtip"
+    restart: "unless-stopped"
+    depends_on:
+      - "postgresql"
+      - "redis"
+    networks:
+      - "internal"
+    ports:
+      - "8080:8000"
+    environment:
+      - "SECRET_KEY=${SECRET_KEY?Variable not set}"
+      - "DATABASE_URL=${DATABASE_URL?Variable not set}"
+      - "REDIS_URL=${REDIS_URL?Variable not set}"
+      - "ENABLE_USER_REGISTRATION=${ENABLE_USER_REGISTRATION?Variable not set}"
+      - "DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL?Variable not set}"
+    labels:
+      - "traefik.enable=false"
+
+  glitchtip-worker:
+    image: "glitchtip/glitchtip:v4.0"
+    container_name: "glitchtip-worker"
+    restart: "unless-stopped"
+    depends_on:
+      - "postgresql"
+      - "redis"
+    networks:
+      - "internal"
+    command: "./bin/run-celery-with-beat.sh"
+    environment:
+      - "SECRET_KEY=${SECRET_KEY?Variable not set}"
+      - "DATABASE_URL=${DATABASE_URL?Variable not set}"
+      - "REDIS_URL=${REDIS_URL?Variable not set}"
+      - "ENABLE_USER_REGISTRATION=${ENABLE_USER_REGISTRATION?Variable not set}"
+      - "DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL?Variable not set}"
+    labels:
+      - "traefik.enable=false"
