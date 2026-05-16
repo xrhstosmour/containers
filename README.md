@@ -1,8 +1,41 @@
 # containers
 
-This repository contains Docker Compose setups for a variety of applications, encompassing general, development, and deployment environments.
+This repository contains Docker Compose setups for a variety of applications, encompassing general, development, monitoring, and deployment environments.
 
 🚧 **Important**: The project is currently under development.
+
+---
+
+**Table of Contents**:
+
+- Available Services
+- Initial Setup
+- Configuration Files
+- Launching Containers
+
+---
+
+**Available Services**:
+
+- **Databases**
+  - PostgreSQL (`databases/postgresql`)
+  - Redis (`databases/redis`)
+  - pgAdmin4 (`databases/manage/pgadmin4`)
+  - Redis Commander (`databases/manage/redis_commander`)
+  - Metabase (`databases/manage/metabase`)
+- **Distribute**
+  - RabbitMQ (`distribute/brokers/rabbitmq`)
+  - RedBeat (`distribute/scheduler/redbeat`)
+- **Development**
+  - Mailpit (`development/mailpit`)
+- **Monitoring**
+  - GlitchTip (`monitoring/glitchtip`)
+- **Networking**
+  - Traefik (`networking/proxies/traefik`)
+- **Security**
+  - HashiCorp Vault (`security/vaults/hashicorp`)
+- **Operating Systems**
+  - Windows (`oses/windows`)
 
 ---
 
