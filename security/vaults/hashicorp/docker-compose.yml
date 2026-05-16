@@ -18,7 +18,7 @@ volumes:
 
 services:
   hashicorp:
-    image: "hashicorp/vault"
+    image: "hashicorp/vault:1.18"
     container_name: "hashicorp"
     restart: "unless-stopped"
     networks:
