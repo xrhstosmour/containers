@@ -16,7 +16,7 @@ services:
     networks:
       - "internal"
     ports:
-      - "8080:8000"
+      - "${GLITCHTIP_PORT?Variable not set}:8000"
     environment:
       - "SECRET_KEY=${SECRET_KEY?Variable not set}"
       - "DATABASE_URL=${DATABASE_URL?Variable not set}"
