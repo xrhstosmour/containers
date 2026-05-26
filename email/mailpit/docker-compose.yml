@@ -13,8 +13,8 @@ services:
     networks:
       - "internal"
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "${MAILPIT_SMTP_PORT?Variable not set}:1025"
+      - "${MAILPIT_PORT?Variable not set}:8025"
     environment:
       - "MP_SMTP_AUTH_ACCEPT_ANY=${MP_SMTP_AUTH_ACCEPT_ANY?Variable not set}"
       - "MP_SMTP_AUTH_ALLOW_INSECURE=${MP_SMTP_AUTH_ALLOW_INSECURE?Variable not set}"

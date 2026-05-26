@@ -19,10 +19,10 @@ services:
     networks:
       - "internal"
     ports:
-      - "3000:3000"
+      - "${METABASE_PORT?Variable not set}:3000"
     volumes:
       - "metabase:/metabase-data"
     environment:
-      - "MB_DB_FILE=${MB_DB_FILE?Variable not set}"
+      - "MB_DB_FILE=${METABASE_DATABASE_FILE?Variable not set}"
     labels:
       - "traefik.enable=false"
