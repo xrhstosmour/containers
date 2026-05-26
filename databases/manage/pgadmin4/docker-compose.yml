@@ -1,5 +1,4 @@
 # TODO: Use Secrets to store the passwords to all containers.
-# TODO: Monitor and update to latest version.
 # TODO: Implement Traefik labels for reverse proxy, even in local network.
 networks:
   internal:
@@ -14,7 +13,7 @@ volumes:
 
 services:
   pgadmin4:
-    image: "dpage/pgadmin4:8"
+    image: "dpage/pgadmin4:9"
     container_name: "pgadmin4"
     restart: "unless-stopped"
     depends_on:
