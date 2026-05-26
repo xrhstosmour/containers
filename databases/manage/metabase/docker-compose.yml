@@ -11,7 +11,7 @@ volumes:
 
 services:
   metabase:
-    image: "metabase/metabase:v0.50"
+    image: "metabase/metabase:v0.61.2"
     container_name: "metabase"
     restart: "unless-stopped"
     depends_on:
