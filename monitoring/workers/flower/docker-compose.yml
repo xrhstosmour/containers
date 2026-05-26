@@ -7,7 +7,7 @@ networks:
 
 services:
   flower:
-    image: "mher/flower:2.1.0"
+    image: "mher/flower:2.0.1"
     container_name: "flower"
     restart: "unless-stopped"
     networks:
