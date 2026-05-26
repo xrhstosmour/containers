@@ -1,0 +1,22 @@
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same local network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+services:
+  flower:
+    image: "mher/flower:2.0"
+    container_name: "flower"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    ports:
+      - "${FLOWER_PORT?Variable not set}:${FLOWER_PORT?Variable not set}"
+    environment:
+      - "CELERY_BROKER_URL=amqp://${RABBITMQ_USER?Variable not set}:${RABBITMQ_PASSWORD?Variable not set}@rabbitmq:${RABBITMQ_PORT?Variable not set}//"
+      - "FLOWER_PORT=${FLOWER_PORT?Variable not set}"
+      - "FLOWER_BASIC_AUTH=${FLOWER_USER?Variable not set}:${FLOWER_PASSWORD?Variable not set}"
+    labels:
+      - "traefik.enable=false"
