@@ -15,7 +15,7 @@ services:
     ports:
       - "${FLOWER_PORT?Variable not set}:${FLOWER_PORT?Variable not set}"
     environment:
-      - "CELERY_BROKER_URL=amqp://${RABBITMQ_USER?Variable not set}:${RABBITMQ_PASSWORD?Variable not set}@rabbitmq:${RABBITMQ_PORT?Variable not set}//"
+      - "CELERY_BROKER_URL=amqps://${RABBITMQ_USER?Variable not set}:${RABBITMQ_PASSWORD?Variable not set}@rabbitmq:${RABBITMQ_PORT?Variable not set}//"
       - "FLOWER_PORT=${FLOWER_PORT?Variable not set}"
       - "FLOWER_BASIC_AUTH=${FLOWER_USER?Variable not set}:${FLOWER_PASSWORD?Variable not set}"
     labels:
