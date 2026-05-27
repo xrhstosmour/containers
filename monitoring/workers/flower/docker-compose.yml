@@ -20,6 +20,6 @@ services:
       - "FLOWER_BASIC_AUTH=${FLOWER_USER?Variable not set}:${FLOWER_PASSWORD?Variable not set}"
       - "SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.pem"
     volumes:
-      - "../../../distribute/brokers/rabbitmq/certificates/ca_certificate.pem:/etc/ssl/certs/ca-bundle.pem:ro"
+      - "./certificates/ca_certificate.pem:/etc/ssl/certs/ca-bundle.pem:ro"
     labels:
       - "traefik.enable=false"
