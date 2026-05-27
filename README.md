@@ -27,7 +27,7 @@ This repository contains Docker Compose setups for a variety of applications, en
   - RabbitMQ (`distribute/brokers/rabbitmq`)
   - RedBeat (`distribute/scheduler/redbeat`)
 - **Development**
-  - Mailpit (`development/mailpit`)
+  - Mailpit (`email/mailpit`)
 - **Monitoring**
   - GlitchTip (`monitoring/glitchtip`)
 - **Networking**
