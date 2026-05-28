@@ -18,5 +18,8 @@ services:
       - "CELERY_BROKER_URL=amqps://${RABBITMQ_USER?Variable not set}:${RABBITMQ_PASSWORD?Variable not set}@rabbitmq:${RABBITMQ_PORT?Variable not set}//"
       - "FLOWER_PORT=${FLOWER_PORT?Variable not set}"
       - "FLOWER_BASIC_AUTH=${FLOWER_USER?Variable not set}:${FLOWER_PASSWORD?Variable not set}"
+      - "SSL_CERT_FILE=/etc/flower/certificates/ca_certificate.pem"
+    volumes:
+      - "./certificates:/etc/flower/certificates:ro"
     labels:
       - "traefik.enable=false"
