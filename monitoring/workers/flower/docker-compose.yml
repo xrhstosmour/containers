@@ -14,6 +14,9 @@ services:
     image: "mher/flower:2.0.1"
     container_name: "flower"
     restart: "unless-stopped"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     networks:
       - "internal"
     ports:
