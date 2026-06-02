@@ -11,8 +11,10 @@ services:
     container_name: "glitchtip"
     restart: "unless-stopped"
     depends_on:
-      - "postgresql"
-      - "redis"
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - "internal"
     ports:
@@ -31,8 +33,12 @@ services:
     container_name: "glitchtip-worker"
     restart: "unless-stopped"
     depends_on:
-      - "postgresql"
-      - "redis"
+      glitchtip:
+        condition: service_started
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - "internal"
     command: "./bin/run-celery-with-beat.sh"
