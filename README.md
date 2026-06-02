@@ -29,7 +29,7 @@ This repository contains Docker Compose setups for a variety of applications, en
 - **Development**
   - Mailpit (`email/mailpit`)
 - **Monitoring**
-  - GlitchTip (`monitoring/glitchtip`)
+  - GlitchTip (`monitoring/codebase/glitchtip`)
 - **Networking**
   - Traefik (`networking/proxies/traefik`)
 - **Security**
