@@ -21,9 +21,8 @@ services:
     environment:
       - "HTTP_USER=${REDIS_COMMANDER_USER?Variable not set}"
       - "HTTP_PASSWORD=${REDIS_COMMANDER_PASSWORD?Variable not set}"
-      # We need the redis environment variables otherwise the container does not boot.
-      - "REDIS_HOST=redis"
-      - "REDIS_PORT=${REDIS_PORT?Variable not set}"
-      - "REDIS_PASSWORD=${REDIS_PASSWORD?Variable not set}"
+      # REDIS_HOSTS embeds host, port, db, and password in one string,
+      # avoiding CLI parsing issues when the password starts with `-`.
+      - "REDIS_HOSTS=default:redis:${REDIS_PORT?Variable not set}:0:${REDIS_PASSWORD?Variable not set}"
     labels:
       - "traefik.enable=false"
