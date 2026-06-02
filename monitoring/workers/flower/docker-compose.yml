@@ -5,6 +5,10 @@ networks:
     # If you want to isolate the container create a new network, with different name for each container and without being external.
     external: true
 
+volumes:
+  flower:
+    name: "flower"
+
 services:
   flower:
     image: "mher/flower:2.0.1"
@@ -21,5 +25,6 @@ services:
       - "SSL_CERT_FILE=/etc/flower/certificates/ca_certificate.pem"
     volumes:
       - "./certificates:/etc/flower/certificates:ro"
+      - "flower:/data"
     labels:
       - "traefik.enable=false"
