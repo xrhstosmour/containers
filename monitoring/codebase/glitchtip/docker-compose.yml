@@ -15,7 +15,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: sh -c "./manage.py migrate --noinput && ./bin/start.sh"
     networks:
       - "internal"
     ports:
