@@ -23,6 +23,8 @@ This repository contains Docker Compose setups for a variety of applications, en
   - pgAdmin4 (`databases/manage/pgadmin4`)
   - Redis Commander (`databases/manage/redis_commander`)
   - Metabase (`databases/manage/metabase`)
+- **Storage**
+  - MinIO (`storage/minio`)
 - **Distribute**
   - RabbitMQ (`distribute/brokers/rabbitmq`)
   - RedBeat (`distribute/scheduler/redbeat`)
