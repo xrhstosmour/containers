@@ -1,0 +1,32 @@
+networks:
+  internal:
+    name: "internal"
+    external: true
+
+volumes:
+  minio:
+    name: "minio"
+
+services:
+  minio:
+    image: "minio/minio:latest"
+    container_name: "minio"
+    command: "server /data --console-address :${MINIO_CONSOLE_PORT?Variable not set}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${MINIO_API_PORT?Variable not set}/minio/health/live"]
+      interval: "10s"
+      timeout: "5s"
+      retries: 5
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    ports:
+      - "${MINIO_API_PORT?Variable not set}:${MINIO_API_PORT?Variable not set}"
+      - "${MINIO_CONSOLE_PORT?Variable not set}:${MINIO_CONSOLE_PORT?Variable not set}"
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ROOT_USER?Variable not set}"
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD?Variable not set}"
+    volumes:
+      - "minio:/data"
+    labels:
+      - "traefik.enable=false"
