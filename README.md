@@ -19,7 +19,7 @@ This repository contains Docker Compose setups for a variety of applications, en
 
 - **Databases**
   - PostgreSQL (`databases/postgresql`)
-  - Redis (`databases/redis`)
+  - Redis (`databases/redis`): standalone and cluster via `--profile cluster`
   - pgAdmin4 (`databases/manage/pgadmin4`)
   - Redis Commander (`databases/manage/redis_commander`)
   - Metabase (`databases/manage/metabase`)
