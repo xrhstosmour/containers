@@ -16,8 +16,15 @@ services:
     image: "dpage/pgadmin4:9"
     container_name: "pgadmin4"
     restart: "unless-stopped"
-    depends_on:
-      - "postgresql"
+    entrypoint:
+      - "bash"
+      - "-c"
+      - |
+        until (echo > "/dev/tcp/${POSTGRESQL_HOST:-postgresql}/${POSTGRESQL_PORT?Variable not set}") 2>/dev/null; do
+          echo "Waiting for PostgreSQL...";
+          sleep 2;
+        done
+        exec /entrypoint.sh
     networks:
       - "internal"
     ports:
