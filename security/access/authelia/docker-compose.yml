@@ -1,0 +1,93 @@
+# TODO: Use Secrets to store the passwords to all containers.
+# `postgresql` and `redis` live in separate compose projects (`databases/postgresql`,
+# `databases/redis`), so `depends_on` cannot reference them. Wait for both
+# host:ports to be reachable before starting Authelia, the same pattern used
+# by `redis_commander`/`flower`. Its `nc` build has no `-z`, so use
+# `echo -n | nc -w` for a zero-I/O reachability check instead.
+#
+# After starting Postgres, add `authelia` to `POSTGRESQL_ADDITIONAL_DATABASES`
+# in `databases/postgresql`'s `.env` and create a matching role/password.
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+services:
+  authelia:
+    image: "authelia/authelia:4.39.20"
+    container_name: "authelia"
+    restart: "unless-stopped"
+    healthcheck:
+      test: ["CMD", "/app/healthcheck.sh"]
+      interval: "10s"
+      timeout: "5s"
+      retries: 5
+    networks:
+      - "internal"
+    ports:
+      - "${AUTHELIA_PORT?Variable not set}:9091"
+    volumes:
+      # Mounted outside `/config` so `/app/entrypoint.sh`'s `chown -R /config`
+      # (further down) doesn't hit this read-only file and warn on every
+      # start. The anonymous `/config` volume keeps that directory present
+      # and writable so the chown itself still succeeds silently.
+      - "./configuration/configuration.yml:/source/configuration.yml:ro"
+      - "/config"
+    environment:
+      - "TZ=${TIMEZONE?Variable not set}"
+      - "DOMAIN=${DOMAIN?Variable not set}"
+      - "ADMIN_USERNAME=${ADMIN_USERNAME?Variable not set}"
+      - "ADMIN_PASSWORD=${ADMIN_PASSWORD?Variable not set}"
+      - "ADMIN_EMAIL=${ADMIN_EMAIL?Variable not set}"
+      - "AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET=${AUTHELIA_JWT_SECRET?Variable not set}"
+      - "AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET?Variable not set}"
+      - "AUTHELIA_SESSION_REDIS_HOST=redis"
+      - "AUTHELIA_SESSION_REDIS_PORT=${REDIS_PORT?Variable not set}"
+      - "AUTHELIA_SESSION_REDIS_PASSWORD=${REDIS_PASSWORD?Variable not set}"
+      - "AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_ENCRYPTION_KEY?Variable not set}"
+      - "AUTHELIA_STORAGE_POSTGRES_ADDRESS=tcp://postgresql:${POSTGRESQL_PORT?Variable not set}"
+      - "AUTHELIA_STORAGE_POSTGRES_DATABASE=authelia"
+      - "AUTHELIA_STORAGE_POSTGRES_USERNAME=${POSTGRESQL_USER?Variable not set}"
+      - "AUTHELIA_STORAGE_POSTGRES_PASSWORD=${POSTGRESQL_PASSWORD?Variable not set}"
+    # Waits for Postgres/Redis, then renders a container-local
+    # `/tmp/configuration.yml` from the read-only mounted `configuration.yml`
+    # (so the tracked copy is never modified) and generates
+    # `/tmp/users_database.yml`, both from plain env vars, on every start
+    # (`ADMIN_*`/`DOMAIN` are kept outside the `AUTHELIA_` prefix so Authelia
+    # doesn't warn about an unrecognized config override), hashing the
+    # password with Authelia's own bundled `crypto` subcommand. Passes
+    # `--config` to the original entrypoint (rather than args directly),
+    # which still handles the (now-empty) `/config` chown and privilege drop
+    # to PUID/PGID afterwards, using our custom config path.
+    entrypoint: ["sh", "-c"]
+    command:
+      # All `$` below are escaped as `$$` so Compose leaves them for the
+      # container's shell to evaluate at runtime, instead of interpolating
+      # them from `.env` while parsing this file.
+      - |
+        until echo -n | nc -w 2 postgresql ${POSTGRESQL_PORT?Variable not set}; do
+          echo "Waiting for PostgreSQL...";
+          sleep 2;
+        done
+        until echo -n | nc -w 2 redis ${REDIS_PORT?Variable not set}; do
+          echo "Waiting for Redis...";
+          sleep 2;
+        done
+        sed "s|\$${DOMAIN}|$$DOMAIN|g" /source/configuration.yml > /tmp/configuration.yml
+        HASH=$$(authelia crypto hash generate bcrypt --password "$$ADMIN_PASSWORD" | awk '{print $$2}')
+        cat > /tmp/users_database.yml <<-CONFIG
+        ---
+        users:
+          $${ADMIN_USERNAME}:
+            disabled: false
+            displayname: 'Admin'
+            password: '$${HASH}'
+            email: '$${ADMIN_EMAIL}'
+            groups:
+              - 'admins'
+        CONFIG
+        exec /app/entrypoint.sh --config /tmp/configuration.yml
+    labels:
+      - "traefik.enable=false"
