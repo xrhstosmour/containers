@@ -24,7 +24,7 @@ services:
     networks:
       - "internal"
     ports:
-      - "${REDIS_COMMANDER_PORT?Variable not set}:8081"
+      - "127.0.0.1:${REDIS_COMMANDER_PORT?Variable not set}:8081"
     environment:
       - "HTTP_USER=${REDIS_COMMANDER_USER?Variable not set}"
       - "HTTP_PASSWORD=${REDIS_COMMANDER_PASSWORD?Variable not set}"
