@@ -18,5 +18,6 @@ services:
     environment:
       - "MP_SMTP_AUTH_ACCEPT_ANY=${MAILPIT_SMTP_AUTH_ACCEPT_ANY?Variable not set}"
       - "MP_SMTP_AUTH_ALLOW_INSECURE=${MAILPIT_SMTP_AUTH_ALLOW_INSECURE?Variable not set}"
+      - "MP_UI_AUTH=${MAILPIT_UI_AUTH?Variable not set}"
     labels:
       - "traefik.enable=false"
