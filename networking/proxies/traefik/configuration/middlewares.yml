@@ -28,7 +28,7 @@ http:
           - "PATCH"
           - "DELETE"
           - "OPTIONS"
-        accessControlMaxAge: 100
+        accessControlMaxAge: 86400
         hostsProxyHeaders:
           - "X-Forwarded-Host"
         stsSeconds: 63072000
