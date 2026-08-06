@@ -1,5 +1,3 @@
-from os import getenv
-
 from app.configuration import (
     DEFAULT_REDBEAT_LOCK_TIMEOUT,
     DEFAULT_REDBEAT_MAXIMUM_INTERVAL,
@@ -30,7 +28,7 @@ celery_worker: Celery = Celery(
     broker=RABBITMQ_CONNECTION_STRING,
     backend=REDIS_CONNECTION_STRING,
     redbeat_redis_url=REDIS_CONNECTION_STRING,
-    redbeat_lock_key=getenv("REDBEAT_LOCK_KEY"),
+    redbeat_lock_key=REDBEAT_LOCK_KEY,
 )
 
 # Celery worker configuration.
