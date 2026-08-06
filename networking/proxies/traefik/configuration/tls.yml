@@ -20,10 +20,6 @@ tls:
         - "TLS_CHACHA20_POLY1305_SHA256"
         # Extra cipher when client is doing version fallback, according to RFC 7507.
         - "TLS_FALLBACK_SCSV"
-      # Elliptic curves selection ordered by preference, enchanting security of auto generated configuration.
-      curvePreferences:
-        - "CurveP521"
-        - "CurveP384"
 
   # Uncomment the below lines, to use existing certificates.
   # certificates:
