@@ -25,6 +25,7 @@ This repository contains Docker Compose setups for a variety of applications, en
   - Metabase (`databases/manage/metabase`)
 - **Storage**
   - MinIO (`storage/minio`)
+  - Filestash (`storage/filestash`)
 - **Distribute**
   - RabbitMQ (`distribute/brokers/rabbitmq`)
   - RedBeat (`distribute/scheduler/redbeat`)
