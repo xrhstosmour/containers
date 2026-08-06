@@ -1,0 +1,157 @@
+# TODO: Use Secrets to store the passwords to all containers.
+# Requires a real OIDC identity provider (Auth0, Zitadel, Keycloak, ...) and a
+# public domain for Let's Encrypt to actually complete a login end to end.
+# Only container startup/pull is verified locally here, the auth flow itself
+# is verified once this is deployed with a real domain on the VPS.
+#
+# `postgresql` lives in a separate compose project (`databases/postgresql`), so
+# `depends_on` cannot reference it. Wait for the host:port to be reachable
+# before starting `management`, the same pattern used by `redis_commander`/`flower`.
+#
+# After starting Postgres, add `netbird` to `POSTGRESQL_ADDITIONAL_DATABASES`
+# in `databases/postgresql`'s `.env` and create a matching role/password.
+#
+# `coturn` (the TURN relay) needs `network_mode: host` to relay real peer
+# traffic, it is the one service in this repo not on the shared `internal`
+# network.
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+volumes:
+  netbird_signal:
+    name: "netbird_signal"
+  netbird_management:
+    name: "netbird_management"
+
+services:
+  dashboard:
+    image: "netbirdio/dashboard:latest"
+    container_name: "netbird-dashboard"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    ports:
+      - "${NETBIRD_DASHBOARD_HTTP_PORT?Variable not set}:80"
+      - "${NETBIRD_DASHBOARD_HTTPS_PORT?Variable not set}:443"
+    environment:
+      - "NETBIRD_MGMT_API_ENDPOINT=https://${NETBIRD_DOMAIN?Variable not set}:${NETBIRD_MANAGEMENT_PORT?Variable not set}"
+      - "NETBIRD_MGMT_GRPC_API_ENDPOINT=https://${NETBIRD_DOMAIN?Variable not set}:${NETBIRD_MANAGEMENT_PORT?Variable not set}"
+      - "AUTH_AUDIENCE=${NETBIRD_AUTH_AUDIENCE?Variable not set}"
+      - "AUTH_CLIENT_ID=${NETBIRD_AUTH_CLIENT_ID?Variable not set}"
+      - "AUTH_AUTHORITY=${NETBIRD_AUTH_AUTHORITY?Variable not set}"
+      - "USE_AUTH0=false"
+      - "AUTH_SUPPORTED_SCOPES=${NETBIRD_AUTH_SUPPORTED_SCOPES?Variable not set}"
+      - "AUTH_REDIRECT_URI=/peers"
+      - "AUTH_SILENT_REDIRECT_URI=/add-peers"
+      - "NETBIRD_TOKEN_SOURCE=accessToken"
+    labels:
+      - "traefik.enable=false"
+
+  signal:
+    image: "netbirdio/signal:0.76.1"
+    container_name: "netbird-signal"
+    restart: "unless-stopped"
+    depends_on:
+      - "dashboard"
+    networks:
+      - "internal"
+    ports:
+      - "${NETBIRD_SIGNAL_PORT?Variable not set}:80"
+    volumes:
+      - "netbird_signal:/var/lib/netbird"
+    labels:
+      - "traefik.enable=false"
+
+  relay:
+    image: "netbirdio/relay:0.76.1"
+    container_name: "netbird-relay"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    ports:
+      - "${NETBIRD_RELAY_PORT?Variable not set}:${NETBIRD_RELAY_PORT?Variable not set}"
+    environment:
+      - "NB_LOG_LEVEL=info"
+      - "NB_LISTEN_ADDRESS=:${NETBIRD_RELAY_PORT?Variable not set}"
+      - "NB_EXPOSED_ADDRESS=rel://${NETBIRD_DOMAIN?Variable not set}:${NETBIRD_RELAY_PORT?Variable not set}"
+      - "NB_AUTH_SECRET=${NETBIRD_RELAY_AUTH_SECRET?Variable not set}"
+    labels:
+      - "traefik.enable=false"
+
+  management:
+    image: "netbirdio/management:0.76.1"
+    container_name: "netbird-management"
+    restart: "unless-stopped"
+    depends_on:
+      - "dashboard"
+    networks:
+      - "internal"
+    ports:
+      - "${NETBIRD_MANAGEMENT_PORT?Variable not set}:443"
+    volumes:
+      - "netbird_management:/var/lib/netbird"
+      - "./configuration/management.json:/etc/netbird/management.json:ro"
+    environment:
+      - "NETBIRD_STORE_ENGINE_POSTGRES_DSN=postgres://${POSTGRESQL_USER?Variable not set}:${POSTGRESQL_PASSWORD?Variable not set}@postgresql:${POSTGRESQL_PORT?Variable not set}/netbird?sslmode=disable"
+      - "NETBIRD_DOMAIN=${NETBIRD_DOMAIN?Variable not set}"
+      - "NETBIRD_RELAY_PORT=${NETBIRD_RELAY_PORT?Variable not set}"
+      - "NETBIRD_RELAY_AUTH_SECRET=${NETBIRD_RELAY_AUTH_SECRET?Variable not set}"
+      - "NETBIRD_SIGNAL_PORT=${NETBIRD_SIGNAL_PORT?Variable not set}"
+      - "NETBIRD_TURN_PASSWORD=${NETBIRD_TURN_PASSWORD?Variable not set}"
+      - "NETBIRD_DATASTORE_ENCRYPTION_KEY=${NETBIRD_DATASTORE_ENCRYPTION_KEY?Variable not set}"
+      - "NETBIRD_AUTH_AUTHORITY=${NETBIRD_AUTH_AUTHORITY?Variable not set}"
+      - "NETBIRD_AUTH_AUDIENCE=${NETBIRD_AUTH_AUDIENCE?Variable not set}"
+      - "NETBIRD_AUTH_OIDC_CONFIGURATION_ENDPOINT=${NETBIRD_AUTH_OIDC_CONFIGURATION_ENDPOINT?Variable not set}"
+    # Renders a container-local `/tmp/management.json` from the read-only
+    # mounted `management.json` on every start (so the tracked copy is never
+    # modified), and passes `--config` pointing at it, so `.env` is the only
+    # file to fill in (its `Relay.Secret` reuses the exact same
+    # `NETBIRD_RELAY_AUTH_SECRET` given to the `relay` service above, so they
+    # can never drift out of sync by hand-editing one and forgetting the
+    # other). The image's own ENTRYPOINT is `/go/bin/netbird-mgmt management`,
+    # so this has to replace `entrypoint:` (not `command:`, which would just
+    # become extra args to that entrypoint). The base image is plain `ubuntu`
+    # without `nc`, so use bash's `/dev/tcp` instead of the `nc -z` pattern
+    # used elsewhere in this repo.
+    entrypoint: ["bash", "-c"]
+    command:
+      # All `$` below are escaped as `$$` so Compose leaves them for the
+      # container's shell to evaluate at runtime, instead of interpolating
+      # them from `.env` while parsing this file.
+      - |
+        sed -e "s|\$${NETBIRD_DOMAIN}|$$NETBIRD_DOMAIN|g" -e "s|\$${NETBIRD_RELAY_PORT}|$$NETBIRD_RELAY_PORT|g" -e "s|\$${NETBIRD_RELAY_AUTH_SECRET}|$$NETBIRD_RELAY_AUTH_SECRET|g" -e "s|\$${NETBIRD_SIGNAL_PORT}|$$NETBIRD_SIGNAL_PORT|g" -e "s|\$${NETBIRD_TURN_PASSWORD}|$$NETBIRD_TURN_PASSWORD|g" -e "s|\$${NETBIRD_DATASTORE_ENCRYPTION_KEY}|$$NETBIRD_DATASTORE_ENCRYPTION_KEY|g" -e "s|\$${NETBIRD_AUTH_AUTHORITY}|$$NETBIRD_AUTH_AUTHORITY|g" -e "s|\$${NETBIRD_AUTH_AUDIENCE}|$$NETBIRD_AUTH_AUDIENCE|g" -e "s|\$${NETBIRD_AUTH_OIDC_CONFIGURATION_ENDPOINT}|$$NETBIRD_AUTH_OIDC_CONFIGURATION_ENDPOINT|g" /etc/netbird/management.json > /tmp/management.json
+        until (exec 3<>/dev/tcp/postgresql/${POSTGRESQL_PORT?Variable not set}) 2>/dev/null; do
+          echo "Waiting for PostgreSQL...";
+          sleep 1;
+        done
+        exec /go/bin/netbird-mgmt management --config /tmp/management.json --port 443 --log-file console --log-level info --disable-anonymous-metrics=true --dns-domain netbird.selfhosted
+    labels:
+      - "traefik.enable=false"
+
+  coturn:
+    image: "coturn/coturn:4.17.0"
+    container_name: "netbird-coturn"
+    restart: "unless-stopped"
+    network_mode: "host"
+    volumes:
+      - "./configuration/turnserver.conf:/etc/coturn/turnserver.conf:ro"
+    environment:
+      - "NETBIRD_TURN_PASSWORD=${NETBIRD_TURN_PASSWORD?Variable not set}"
+    # Renders a container-local `/tmp/turnserver.conf` from the read-only
+    # mounted `turnserver.conf` on every start (so the tracked copy is never
+    # modified), so its TURN password always matches `NETBIRD_TURN_PASSWORD`
+    # in `.env`. The image's own `docker-entrypoint.sh` just prepends
+    # `turnserver` to arguments starting with `-` and evals each one (harmless
+    # to still call it afterwards), so it's safe to run this ahead of it
+    # instead of replacing it outright.
+    entrypoint: ["sh", "-c"]
+    command:
+      - >
+        sed "s|\$${NETBIRD_TURN_PASSWORD}|$$NETBIRD_TURN_PASSWORD|g" /etc/coturn/turnserver.conf > /tmp/turnserver.conf;
+        exec docker-entrypoint.sh -c /tmp/turnserver.conf
+    labels:
+      - "traefik.enable=false"
