@@ -1,4 +1,4 @@
-# Set the base docker image, we use slim from alpine because we care about performance.
+# Set the base docker image, we use slim-bookworm for a small footprint.
 FROM python:3.11.5-slim-bookworm
 
 # Set working directory.
@@ -17,10 +17,11 @@ ENV PYTHONFAULTHANDLER=1 \
     PIP_DEFAULT_TIMEOUT=100
 
 # Update the base image and install needed os packages.
-RUN apt-get -y update --no-install-recommends \
+RUN apt-get -y update \
     && apt-get -y install --no-install-recommends curl\
     && apt-get autoremove -y \
-    && apt-get clean -y
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
 
 # Enable again OS dialogs, after updating it.
 ENV DEBIAN_FRONTEND=dialog
