@@ -34,6 +34,7 @@ This repository contains Docker Compose setups for a variety of applications, en
   - GlitchTip (`monitoring/codebase/glitchtip`)
 - **Networking**
   - Traefik (`networking/proxies/traefik`)
+  - NetBird (`networking/vpn/netbird`)
 - **Security**
   - HashiCorp Vault (`security/vaults/hashicorp`)
 - **Operating Systems**
