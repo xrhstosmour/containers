@@ -41,9 +41,6 @@ services:
       # Define entrypoints.
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web_secure.address=:443"
-      # Add forwarded headers.
-      - "--entryPoints.web.forwardedHeaders.insecure"
-      - "--entryPoints.web_secure.forwardedHeaders.insecure"
       # Uncomment the below lines to enable TLS/SSL from a certificate resolver if you are not going to use existing certificates.
       # - "--certificatesresolvers.le.acme.email=${TRAEFIK_EMAIL?Variable not set}"
       # - "--certificatesresolvers.le.acme.storage=/certificates/acme.json"
