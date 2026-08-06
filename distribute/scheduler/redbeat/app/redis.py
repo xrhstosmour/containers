@@ -24,15 +24,26 @@ def create_redis_client() -> Redis:
 
 
 def delete_redis_lock(lock_name: str) -> None:
-    """Delete redis lock, via its name.
+    """Delete redis lock, via its name, but only if it is actually stale.
+
+    RedBeat always acquires its lock with an explicit TTL, so a lock held
+    by a live (or freshly crashed) process always reports a positive TTL,
+    and Redis itself removes the key once that TTL expires. A lock is
+    only genuinely stuck if it exists without a TTL at all (ttl == -1),
+    which should not happen under normal RedBeat operation. Deleting the
+    lock whenever it merely exists would force-remove a lock a still
+    running beat process legitimately owns, defeating RedBeat's
+    single-scheduler guarantee during rolling restarts.
 
     Args:
         lock_name (str): The name of the lock.
     """
     try:
-        # Delete the lock if it exists.
-        if redis_client.exists(lock_name):
-            logging.info(f"Deleting lock: {lock_name}...")
+        time_to_live: int = redis_client.ttl(lock_name)
+        # -2 means the key does not exist, nothing to delete.
+        # -1 means the key exists without an expiry, which is stale.
+        if time_to_live == -1:
+            logging.info(f"Deleting stale lock: {lock_name}...")
             redis_client.delete(lock_name)
     except ConnectionError as connection_error:
         logging.error(connection_error)
