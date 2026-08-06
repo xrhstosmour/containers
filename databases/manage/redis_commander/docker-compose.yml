@@ -12,8 +12,15 @@ services:
     image: "ghcr.io/joeferner/redis-commander:0.8.0"
     container_name: "redis-commander"
     restart: "unless-stopped"
-    depends_on:
-      - "redis"
+    # `redis` lives in a separate compose project (`databases/redis`), so
+    # `depends_on` cannot reference it. Wait for the host:port to be
+    # reachable before starting instead.
+    command:
+      [
+        "sh",
+        "-c",
+        "until nc -z redis ${REDIS_PORT?Variable not set}; do echo 'Waiting for Redis...'; sleep 1; done; exec /redis-commander/docker/entrypoint.sh",
+      ]
     networks:
       - "internal"
     ports:
