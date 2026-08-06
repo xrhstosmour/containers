@@ -9,8 +9,6 @@ networks:
     external: true
 
 volumes:
-  hashicorp_configuration:
-    name: "hashicorp_configuration"
   hashicorp_logs:
     name: "hashicorp_logs"
   hashicorp_file:
@@ -26,12 +24,14 @@ services:
     cap_add:
       - "IPC_LOCK"
     ports:
-      - "${HASHICORP_PORT?Variable not set}:${HASHICORP_PORT?Variable not set}"
+      # The container always listens on 8200, see `template.hcl`, only the host side is configurable.
+      - "${HASHICORP_PORT?Variable not set}:8200"
     volumes:
-      - "hashicorp_configuration:/vault/config"
+      - "./template.hcl:/vault/config/config.hcl:ro"
       - "hashicorp_logs:/vault/logs"
       - "hashicorp_file:/vault/file"
     environment:
-      - "VAULT_ADDR=http://0.0.0.0:${HASHICORP_PORT?Variable not set}"
+      - "VAULT_ADDR=http://0.0.0.0:8200"
+    command: "server -config=/vault/config/config.hcl"
     labels:
       - "traefik.enable=false"
