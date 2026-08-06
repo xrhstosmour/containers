@@ -14,15 +14,21 @@ services:
     image: "mher/flower:2.0.1"
     container_name: "flower"
     restart: "unless-stopped"
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
+    command:
+      - "sh"
+      - "-c"
+      - |
+        until nc -z -w 3 "${RABBITMQ_HOST?Variable not set}" "${RABBITMQ_PORT?Variable not set}"; do
+          echo "Waiting for RabbitMQ at ${RABBITMQ_HOST?Variable not set}:${RABBITMQ_PORT?Variable not set}...";
+          sleep 2;
+        done
+        exec celery flower
     networks:
       - "internal"
     ports:
       - "${FLOWER_PORT?Variable not set}:${FLOWER_PORT?Variable not set}"
     environment:
-      - "CELERY_BROKER_URL=amqps://${RABBITMQ_USER?Variable not set}:${RABBITMQ_PASSWORD?Variable not set}@rabbitmq:${RABBITMQ_PORT?Variable not set}//"
+      - "CELERY_BROKER_URL=amqps://${RABBITMQ_USER?Variable not set}:${RABBITMQ_PASSWORD?Variable not set}@${RABBITMQ_HOST?Variable not set}:${RABBITMQ_PORT?Variable not set}//"
       - "FLOWER_PORT=${FLOWER_PORT?Variable not set}"
       - "FLOWER_BASIC_AUTH=${FLOWER_USER?Variable not set}:${FLOWER_PASSWORD?Variable not set}"
       - "SSL_CERT_FILE=/etc/flower/certificates/ca_certificate.pem"
