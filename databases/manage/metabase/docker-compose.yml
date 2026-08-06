@@ -14,8 +14,15 @@ services:
     image: "metabase/metabase:v0.61.2"
     container_name: "metabase"
     restart: "unless-stopped"
-    depends_on:
-      - "postgresql"
+    entrypoint:
+      - "sh"
+      - "-c"
+      - >-
+        until nc -z -w 2 postgresql ${METABASE_DATABASE_PORT?Variable not set}; do
+          echo "Waiting for postgresql...";
+          sleep 2;
+        done;
+        exec /app/run_metabase.sh
     networks:
       - "internal"
     ports:
