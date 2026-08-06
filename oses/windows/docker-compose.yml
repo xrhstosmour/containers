@@ -14,7 +14,9 @@ volumes:
 
 services:
   windows10:
-    image: "ghcr.io/vaggeliskls/windows-in-docker-container:latest"
+    # Pinned to the latest stable release tag as of writing, check
+    # https://github.com/vaggeliskls/windows-in-docker-container/tags for a newer one before deploying.
+    image: "ghcr.io/vaggeliskls/windows-in-docker-container:1.0.1"
     stdin_open: true
     tty: true
     privileged: true
