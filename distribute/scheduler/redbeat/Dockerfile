@@ -26,7 +26,10 @@ RUN apt-get -y update --no-install-recommends \
 ENV DEBIAN_FRONTEND=dialog
 
 # Install needed packages for redbeat.
-RUN pip install celery celery-redbeat redis --ignore-installed
+RUN pip install celery==5.3.6 celery-redbeat==2.2.0 redis==5.0.1 --ignore-installed
+
+# Create a non-root user to run the container as.
+RUN useradd --create-home --shell /usr/sbin/nologin appuser
 
 # Make the directory for our container.
 RUN mkdir -p /app/scripts
@@ -35,8 +38,14 @@ RUN mkdir -p /app/scripts
 COPY /app /app
 
 # Download the script needed to wait for other containers and make it executable.
-RUN curl -O https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && mv /wait-for-it.sh  /app/scripts/wait-for-it.sh
+RUN curl -fO https://raw.githubusercontent.com/vishnubob/wait-for-it/81b1373f17855a4dc21156cfe1694c31d7d1792e/wait-for-it.sh && mv /wait-for-it.sh  /app/scripts/wait-for-it.sh
 RUN chmod +x /app/scripts/*.sh
+
+# Grant the non-root user ownership of the app directory.
+RUN chown -R appuser:appuser /app
 
 # Set the python environment directory.
 ENV PYTHONPATH=/..
+
+# Run the container as the non-root user.
+USER appuser
