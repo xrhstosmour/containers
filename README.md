@@ -36,6 +36,7 @@ This repository contains Docker Compose setups for a variety of applications, en
   - Traefik (`networking/proxies/traefik`)
 - **Security**
   - HashiCorp Vault (`security/vaults/hashicorp`)
+  - Authelia (`security/access/authelia`)
 - **Operating Systems**
   - Windows (`oses/windows`)
 
