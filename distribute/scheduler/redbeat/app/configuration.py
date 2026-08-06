@@ -24,7 +24,7 @@ if not REDIS_DATABASE.isdigit():
     )
 
 # Redis connection string.
-REDIS_CONNECTION_STRING: str = f"redis://:{quote_plus(getenv('REDIS_PASSWORD'), safe='')}@{getenv('REDIS_HOST')}:{getenv('REDIS_PORT')}/{REDIS_DATABASE}"
+REDIS_CONNECTION_STRING: str = f"redis://:{quote_plus(getenv('REDIS_PASSWORD'), safe='')}@{quote_plus(getenv('REDIS_HOST'), safe='')}:{getenv('REDIS_PORT')}/{REDIS_DATABASE}"
 
 # RabbitMQ connection string.
-RABBITMQ_CONNECTION_STRING: str = f"amqp://{getenv('RABBITMQ_USER')}:{quote_plus(getenv('RABBITMQ_PASSWORD'), safe='')}@{getenv('RABBITMQ_HOST')}:{getenv('RABBITMQ_PORT')}/"
+RABBITMQ_CONNECTION_STRING: str = f"amqp://{quote_plus(getenv('RABBITMQ_USER'), safe='')}:{quote_plus(getenv('RABBITMQ_PASSWORD'), safe='')}@{quote_plus(getenv('RABBITMQ_HOST'), safe='')}:{getenv('RABBITMQ_PORT')}/"
