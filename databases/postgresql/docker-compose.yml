@@ -34,6 +34,6 @@ services:
       - "POSTGRES_USER=${POSTGRESQL_USER?Variable not set}"
       - "POSTGRES_HOST_AUTH_METHOD=${POSTGRESQL_AUTHENTICATION_METHOD?Variable not set}"
       - "POSTGRESQL_ADDITIONAL_DATABASES=${POSTGRESQL_ADDITIONAL_DATABASES:-}"
-    command: "-p ${POSTGRESQL_PORT?Variable not set}"
+    command: "-c config_file=/etc/postgresql.conf -p ${POSTGRESQL_PORT?Variable not set}"
     labels:
       - "traefik.enable=false"
