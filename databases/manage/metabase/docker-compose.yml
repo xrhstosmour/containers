@@ -19,7 +19,7 @@ services:
     networks:
       - "internal"
     ports:
-      - "${METABASE_PORT?Variable not set}:3000"
+      - "127.0.0.1:${METABASE_PORT?Variable not set}:3000"
     volumes:
       - "metabase:/metabase-data"
     environment:

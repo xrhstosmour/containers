@@ -21,7 +21,7 @@ services:
     networks:
       - "internal"
     ports:
-      - "${PGADMIN4_PORT?Variable not set}:${PGADMIN4_PORT?Variable not set}"
+      - "127.0.0.1:${PGADMIN4_PORT?Variable not set}:${PGADMIN4_PORT?Variable not set}"
     volumes:
       - "pgadmin4:/var/lib/pgadmin"
     environment:
