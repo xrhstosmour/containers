@@ -1,0 +1,63 @@
+{
+    "_comment": "Trimmed down from upstream's infrastructure_files/management.json.tmpl to what a single, self-hosted, generic-OIDC setup needs. This file is mounted read-only; on every container start (see docker-compose.yml) it's rendered into a container-local copy with the placeholders below substituted from .env, so this tracked copy is never modified. Edit the rest of this file directly for anything else, the same way Traefik's configuration/*.yml files are hand-edited. See https://docs.netbird.io/selfhosted/identity-providers for advanced IdP integrations.",
+    "Stuns": [
+        {
+            "Proto": "udp",
+            "URI": "stun:${NETBIRD_DOMAIN}:3478",
+            "Username": "",
+            "Password": null
+        }
+    ],
+    "TURNConfig": {
+        "Turns": [
+            {
+                "Proto": "udp",
+                "URI": "turn:${NETBIRD_DOMAIN}:3478",
+                "Username": "netbird",
+                "Password": "${NETBIRD_TURN_PASSWORD}"
+            }
+        ],
+        "CredentialsTTL": "12h",
+        "Secret": "${NETBIRD_TURN_TIME_BASED_SECRET}",
+        "TimeBasedCredentials": false
+    },
+    "Relay": {
+        "Addresses": ["rel://${NETBIRD_DOMAIN}:${NETBIRD_RELAY_PORT}"],
+        "CredentialsTTL": "24h",
+        "Secret": "${NETBIRD_RELAY_AUTH_SECRET}"
+    },
+    "Signal": {
+        "Proto": "https",
+        "URI": "${NETBIRD_DOMAIN}:${NETBIRD_SIGNAL_PORT}",
+        "Username": "",
+        "Password": null
+    },
+    "ReverseProxy": {
+        "TrustedHTTPProxies": [],
+        "TrustedHTTPProxiesCount": 0,
+        "TrustedPeers": ["0.0.0.0/0"]
+    },
+    "DisableDefaultPolicy": false,
+    "Datadir": "",
+    "DataStoreEncryptionKey": "${NETBIRD_DATASTORE_ENCRYPTION_KEY}",
+    "StoreConfig": {
+        "Engine": "postgres"
+    },
+    "HttpConfig": {
+        "Address": "0.0.0.0:443",
+        "AuthIssuer": "${NETBIRD_AUTH_AUTHORITY}",
+        "AuthAudience": "${NETBIRD_AUTH_AUDIENCE}",
+        "AuthKeysLocation": "",
+        "AuthUserIDClaim": "",
+        "CertFile": "",
+        "CertKey": "",
+        "IdpSignKeyRefreshEnabled": false,
+        "OIDCConfigEndpoint": "${NETBIRD_AUTH_OIDC_CONFIGURATION_ENDPOINT}"
+    },
+    "IdpManagerConfig": {
+        "ManagerType": "none"
+    },
+    "DeviceAuthorizationFlow": {
+        "Provider": "none"
+    }
+}
