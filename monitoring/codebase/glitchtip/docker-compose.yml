@@ -10,12 +10,31 @@ services:
     image: "glitchtip/glitchtip:v4.0"
     container_name: "glitchtip"
     restart: "unless-stopped"
-    depends_on:
-      postgresql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    command: sh -c "./manage.py migrate --noinput && ./bin/start.sh"
+    # `postgresql` and `redis` live in separate docker compose projects, so
+    # they cannot be referenced via `depends_on`. Wait for them by hand
+    # instead, matching the pattern used in `distribute/scheduler/redbeat`.
+    command:
+      - "bash"
+      - "-c"
+      - >
+        until (echo > /dev/tcp/${POSTGRESQL_HOST?Variable not set}/${POSTGRESQL_PORT?Variable not set}) 2>/dev/null; do
+          echo "Waiting for postgresql...";
+          sleep 2;
+        done &&
+        until (echo > /dev/tcp/${REDIS_HOST?Variable not set}/${REDIS_PORT?Variable not set}) 2>/dev/null; do
+          echo "Waiting for redis...";
+          sleep 2;
+        done &&
+        ./manage.py migrate --noinput &&
+        ./bin/start.sh
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "python3 -c \"import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/_health/').status == 200 else 1)\""
+      interval: "10s"
+      timeout: "5s"
+      retries: 5
+      start_period: "30s"
     networks:
       - "internal"
     ports:
@@ -35,14 +54,25 @@ services:
     restart: "unless-stopped"
     depends_on:
       glitchtip:
-        condition: service_started
-      postgresql:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks:
       - "internal"
-    command: "./bin/run-celery-with-beat.sh"
+    # `postgresql` and `redis` live in separate docker compose projects, so
+    # they cannot be referenced via `depends_on`. Wait for them by hand
+    # instead, matching the pattern used in `distribute/scheduler/redbeat`.
+    command:
+      - "bash"
+      - "-c"
+      - >
+        until (echo > /dev/tcp/${POSTGRESQL_HOST?Variable not set}/${POSTGRESQL_PORT?Variable not set}) 2>/dev/null; do
+          echo "Waiting for postgresql...";
+          sleep 2;
+        done &&
+        until (echo > /dev/tcp/${REDIS_HOST?Variable not set}/${REDIS_PORT?Variable not set}) 2>/dev/null; do
+          echo "Waiting for redis...";
+          sleep 2;
+        done &&
+        ./bin/run-celery-with-beat.sh
     environment:
       - "SECRET_KEY=${SECRET_KEY?Variable not set}"
       - "DATABASE_URL=${DATABASE_URL?Variable not set}"
