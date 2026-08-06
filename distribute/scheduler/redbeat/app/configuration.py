@@ -16,8 +16,15 @@ REDBEAT_MAXIMUM_INTERVAL: int = int(
 )
 REDBEAT_LOCK_KEY: str = getenv("REDBEAT_LOCK_KEY", "redbeat:lock")
 
+# Validate the Redis database, since it must be a non-negative integer.
+REDIS_DATABASE: str = getenv("REDIS_DATABASE", "")
+if not REDIS_DATABASE.isdigit():
+    raise ValueError(
+        f"REDIS_DATABASE must be set to a non-negative integer, got: {REDIS_DATABASE}"
+    )
+
 # Redis connection string.
-REDIS_CONNECTION_STRING: str = f"redis://:{quote_plus(getenv('REDIS_PASSWORD'), safe='')}@{getenv('REDIS_HOST')}:{getenv('REDIS_PORT')}/{getenv('REDIS_DATABASE')}"
+REDIS_CONNECTION_STRING: str = f"redis://:{quote_plus(getenv('REDIS_PASSWORD'), safe='')}@{getenv('REDIS_HOST')}:{getenv('REDIS_PORT')}/{REDIS_DATABASE}"
 
 # RabbitMQ connection string.
 RABBITMQ_CONNECTION_STRING: str = f"amqp://{getenv('RABBITMQ_USER')}:{quote_plus(getenv('RABBITMQ_PASSWORD'), safe='')}@{getenv('RABBITMQ_HOST')}:{getenv('RABBITMQ_PORT')}/"
