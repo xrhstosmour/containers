@@ -21,6 +21,11 @@ services:
       timeout: "5s"
       retries: 5
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "2G"
     networks:
       - "internal"
     ports:
