@@ -53,6 +53,11 @@ services:
       timeout: "3s"
       retries: 5
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
     networks:
       - "internal"
     ports:
@@ -90,6 +95,11 @@ services:
       timeout: "3s"
       retries: 5
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
     networks:
       - "internal"
     volumes:
@@ -120,6 +130,11 @@ services:
       timeout: "3s"
       retries: 5
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
     networks:
       - "internal"
     volumes:
@@ -150,6 +165,11 @@ services:
       timeout: "3s"
       retries: 5
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
     networks:
       - "internal"
     volumes:
@@ -180,6 +200,11 @@ services:
       timeout: "3s"
       retries: 5
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
     networks:
       - "internal"
     volumes:
@@ -210,6 +235,11 @@ services:
       timeout: "3s"
       retries: 5
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
     networks:
       - "internal"
     volumes:
@@ -240,6 +270,11 @@ services:
       timeout: "3s"
       retries: 5
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
     networks:
       - "internal"
     volumes:
