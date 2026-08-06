@@ -58,7 +58,7 @@ services:
       # Allows Traefik can listen to the Docker events.
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       # Mount the dynamic configuration folder.
-      - "./configuration:/configuration"
+      - "./configuration:/configuration:ro"
       # Mount the volume for certificates.
       - "./certificates:/certificates"
     environment:
