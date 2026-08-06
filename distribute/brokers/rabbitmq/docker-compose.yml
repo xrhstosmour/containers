@@ -27,15 +27,18 @@ services:
       - "internal"
     ports:
       - "${RABBITMQ_PORT?Variable not set}:${RABBITMQ_PORT?Variable not set}"
-      - "${RABBITMQ_MANAGEMENT_PORT?Variable not set}:15672"
+      - "${RABBITMQ_MANAGEMENT_PORT?Variable not set}:${RABBITMQ_MANAGEMENT_PORT?Variable not set}"
     volumes:
       - "rabbitmq:/var/lib/rabbitmq"
-      - "./configuration/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf"
+      - "./configuration/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf.template:ro"
+      - "./configuration/render-config.sh:/usr/local/bin/render-config.sh:ro"
       - "./certificates:/etc/rabbitmq/certificates"
     environment:
-      - "RABBITMQ_USER=${RABBITMQ_USER?Variable not set}"
-      - "RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD?Variable not set}"
+      - "RABBITMQ_DEFAULT_USER=${RABBITMQ_USER?Variable not set}"
+      - "RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD?Variable not set}"
       - "RABBITMQ_CONSUMER_TIMEOUT=${RABBITMQ_CONSUMER_TIMEOUT?Variable not set}"
       - "RABBITMQ_PORT=${RABBITMQ_PORT?Variable not set}"
+      - "RABBITMQ_MANAGEMENT_PORT=${RABBITMQ_MANAGEMENT_PORT?Variable not set}"
+    command: ["sh", "/usr/local/bin/render-config.sh"]
     labels:
       - "traefik.enable=false"
