@@ -32,6 +32,7 @@ This repository contains Docker Compose setups for a variety of applications, en
   - Mailpit (`email/mailpit`)
 - **Monitoring**
   - GlitchTip (`monitoring/codebase/glitchtip`)
+  - Uptime Kuma (`monitoring/services/uptime-kuma`)
 - **Networking**
   - Traefik (`networking/proxies/traefik`)
 - **Security**
