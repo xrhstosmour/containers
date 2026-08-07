@@ -28,6 +28,8 @@ This repository contains Docker Compose setups for a variety of applications, en
   - Filestash (`storage/filestash`)
 - **Management**
   - Dockhand (`management/services/dockhand`)
+- **Web**
+  - LinkStack (`web/sharing/linkstack`)
 - **Distribute**
   - RabbitMQ (`distribute/brokers/rabbitmq`)
   - RedBeat (`distribute/scheduler/redbeat`)
