@@ -1,0 +1,27 @@
+# TODO: Add a Collabora WOPI sidecar for in-browser Office document editing (see upstream's example compose).
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+volumes:
+  filestash:
+    name: "filestash"
+
+services:
+  filestash:
+    image: "machines/filestash:latest"
+    container_name: "filestash"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    ports:
+      - "${FILESTASH_PORT?Variable not set}:8334"
+    environment:
+      - "APPLICATION_URL=${FILESTASH_APPLICATION_URL:-}"
+    volumes:
+      - "filestash:/app/data/state"
+    labels:
+      - "traefik.enable=false"
