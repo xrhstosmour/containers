@@ -29,7 +29,11 @@ services:
     networks:
       - "internal"
     ports:
-      - "${POSTGRESQL_PORT?Variable not set}:${POSTGRESQL_PORT?Variable not set}"
+      # Loopback-only: other containers reach this over the `internal` Docker
+      # network directly, not through the published host port, so this is
+      # for local/tunnelled admin access only, the same restriction already
+      # applied to pgAdmin4/Metabase/Redis Commander/Mailpit.
+      - "127.0.0.1:${POSTGRESQL_PORT?Variable not set}:${POSTGRESQL_PORT?Variable not set}"
     volumes:
       - "postgresql:/var/lib/postgresql/data"
       - "./configuration/postgresql.conf:/etc/postgresql.conf:ro"
