@@ -1,0 +1,32 @@
+# TODO: Wire this up to the shared `postgresql` container instead of SQLite once
+# https://github.com/Finsys/dockhand/issues/1110 is fixed upstream. As of
+# `fnsys/dockhand:v1.0.40` (the latest available image), Postgres-backed
+# migrations fail with `CREATE SCHEMA IF NOT EXISTS "drizzle"` on a fresh
+# database, a confirmed, currently unresolved upstream bug, so this stays on
+# the image's default embedded SQLite storage for now.
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+volumes:
+  dockhand:
+    name: "dockhand"
+
+services:
+  dockhand:
+    image: "fnsys/dockhand:v1.0.40"
+    container_name: "dockhand"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    ports:
+      - "${DOCKHAND_PORT?Variable not set}:3000"
+    volumes:
+      - "dockhand:/app/data"
+      # Required for Dockhand to manage containers on this host.
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    labels:
+      - "traefik.enable=false"
