@@ -20,13 +20,58 @@ services:
     image: "fnsys/dockhand:v1.0.40"
     container_name: "dockhand"
     restart: "unless-stopped"
+    depends_on:
+      - "docker-socket-proxy"
     networks:
       - "internal"
     ports:
       - "${DOCKHAND_PORT?Variable not set}:3000"
     volumes:
       - "dockhand:/app/data"
-      # Required for Dockhand to manage containers on this host.
-      - "/var/run/docker.sock:/var/run/docker.sock"
+    labels:
+      - "traefik.enable=false"
+    # NOTE: Dockhand has no startup environment variable (e.g. `DOCKER_HOST`) for
+    # pointing it at a remote Docker endpoint, per its own entrypoint script and
+    # documentation. After this stack is up, add the Docker environment manually
+    # in the web UI: Settings > Environments > add a TCP environment pointing at
+    # `tcp://docker-socket-proxy:2375`.
+
+  # Proxies the Docker API so Dockhand no longer holds a raw, read-write bind
+  # mount of the host's docker.sock (root-equivalent host control). Only the
+  # container-management endpoints Dockhand's UI needs are enabled below.
+  docker-socket-proxy:
+    image: "tecnativa/docker-socket-proxy:v0.5.0"
+    container_name: "dockhand-docker-socket-proxy"
+    restart: "unless-stopped"
+    networks:
+      - "internal"
+    volumes:
+      # Required for the proxy to reach the Docker daemon on behalf of Dockhand.
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    environment:
+      # Read+container-management access, required by Dockhand's UI.
+      - "CONTAINERS=1"
+      - "POST=1"
+      - "IMAGES=1"
+      - "NETWORKS=1"
+      - "VOLUMES=1"
+      - "INFO=1"
+      - "PING=1"
+      - "VERSION=1"
+      # Dockhand's web terminal creates exec instances directly against the
+      # Docker API (`createExec` in its own source), and its disk-usage view
+      # calls `/system/df`, both gated behind their own flags, not `CONTAINERS`/`INFO`.
+      - "EXEC=1"
+      - "SYSTEM=1"
+      # Higher-risk endpoints Dockhand's container management doesn't need.
+      - "SWARM=0"
+      - "PLUGINS=0"
+      - "SERVICES=0"
+      - "TASKS=0"
+      - "NODES=0"
+      - "DISTRIBUTION=0"
+      - "AUTH=0"
+      - "SECRETS=0"
+      - "CONFIGS=0"
     labels:
       - "traefik.enable=false"
