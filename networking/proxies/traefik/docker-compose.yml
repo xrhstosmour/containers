@@ -21,7 +21,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "${TRAEFIK_PORT?Variable not set}:${TRAEFIK_PORT?Variable not set}"
     command:
       # Configure the application.
       - "--global.checkNewVersion=true"
