@@ -1,0 +1,8 @@
+# This is a placeholder, not a real certificate. `template.hcl` loads
+# `certificate.crt`, not this file, generate that real file before starting
+# the container, Vault's listener will not start without it.
+#
+# Generate a self-signed certificate and key for testing:
+# openssl req -x509 -sha256 -nodes -days 730 -newkey rsa:2048 \
+#   -keyout private_key.key -out certificate.crt \
+#   -subj "/CN=vault.internal"
