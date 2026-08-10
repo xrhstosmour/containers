@@ -61,7 +61,7 @@ services:
     networks:
       - "internal"
     ports:
-      - "${REDIS_PORT?Variable not set}:${REDIS_PORT?Variable not set}"
+      - "127.0.0.1:${REDIS_PORT?Variable not set}:${REDIS_PORT?Variable not set}"
     volumes:
       - "redis:/data"
     labels:
