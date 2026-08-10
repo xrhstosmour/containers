@@ -40,6 +40,7 @@ This repository contains Docker Compose setups for a variety of applications, en
   - Uptime Kuma (`monitoring/services/uptime-kuma`)
 - **Networking**
   - Traefik (`networking/proxies/traefik`)
+  - NetBird (`networking/vpn/netbird`)
 - **Security**
   - HashiCorp Vault (`security/vaults/hashicorp`)
   - Authelia (`security/access/authelia`)
