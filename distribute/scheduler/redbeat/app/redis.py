@@ -4,6 +4,14 @@ from urllib.parse import urlparse
 from app.configuration import REDIS_CONNECTION_STRING
 from redis import ConnectionError, Redis, RedisError
 
+# Socket timeout, in seconds, for the Redis client. Without this, a Redis
+# instance that accepts the TCP connection but stops responding (e.g. a
+# partial network partition or an overloaded instance) leaves calls like
+# ttl() hanging indefinitely, which stalls container startup with no error
+# surfaced since delete_redis_lock() runs at import time, before Celery Beat
+# starts.
+REDIS_SOCKET_TIMEOUT_SECONDS = 5
+
 
 def create_redis_client() -> Redis:
     """Create a Redis client instance.
@@ -20,6 +28,8 @@ def create_redis_client() -> Redis:
         port=url.port,
         db=int(url.path.lstrip("/")),
         password=url.password,
+        socket_connect_timeout=REDIS_SOCKET_TIMEOUT_SECONDS,
+        socket_timeout=REDIS_SOCKET_TIMEOUT_SECONDS,
     )
 
 
