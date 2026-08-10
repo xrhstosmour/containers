@@ -70,6 +70,7 @@ services:
       # SSL/TLS configuration.
       - "traefik.http.routers.traefik.entrypoints=web_secure"
       - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.options=tls-opts@file"
       # Uncomment the below line to enable TLS/SSL from a certificate resolver.
       # - "traefik.http.routers.traefik.tls.certresolver=${TRAEFIK_CERTIFICATE_RESOLVER?Variable not set}"
       # Middleware for basic authentication to the dashboard.
