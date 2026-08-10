@@ -16,6 +16,11 @@ services:
     image: "linkstackorg/linkstack:latest"
     container_name: "linkstack"
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256M"
     networks:
       - "internal"
     ports:
