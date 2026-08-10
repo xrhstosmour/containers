@@ -34,7 +34,9 @@ celery_worker: Celery = Celery(
 # Celery worker configuration.
 celery_worker.conf.update(
     worker_prefetch_multiplier=1,
-    broker_heartbeat=0,
+    # Detect a silently dropped broker connection (e.g. NAT/firewall idle
+    # timeout) well before the OS-level TCP timeout kicks in.
+    broker_heartbeat=30,
     task_acks_late=True,
     timezone="UTC",
     worker_max_tasks_per_child=1,
