@@ -29,9 +29,6 @@ services:
     cgroup: host
     networks:
       - "internal"
-    cap_add:
-      - "NET_ADMIN"
-      - "SYS_ADMIN"
     volumes:
       - "libvirt_data:/var/lib/libvirt"
       - "vagrant_data:/root/.vagrant.d"
