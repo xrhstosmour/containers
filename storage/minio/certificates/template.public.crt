@@ -1,0 +1,2 @@
+# Generate a self-signed certificate from the private key above.
+openssl req -x509 -new -nodes -key private.key -sha256 -days 730 -out public.crt -subj "/CN=minio"
