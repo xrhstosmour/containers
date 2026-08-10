@@ -12,7 +12,7 @@ volumes:
 
 services:
   filestash:
-    image: "machines/filestash:latest"
+    image: "machines/filestash@sha256:07b1d0e59a313073974cf851e180e008224ef1192eb7439a6ba47be80093ad7c"
     container_name: "filestash"
     restart: "unless-stopped"
     networks:
