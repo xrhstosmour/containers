@@ -1,0 +1,68 @@
+---
+# Authelia configuration.
+# This file is mounted read-only; on every container start (see
+# `docker-compose.yml`) it's rendered into a container-local copy with the
+# domain placeholders below substituted from DOMAIN in `.env`, so this
+# tracked copy is never modified. Edit the rest of this file directly for
+# anything else, the same way Traefik's `configuration/*.yml` files are
+# hand-edited.
+#
+# Secrets, hosts, and ports for the shared `postgresql`/`redis` containers are
+# supplied via the `AUTHELIA_*` environment variables in `docker-compose.yml`
+# (Authelia lets any config key be overridden this way), so they are left as
+# empty stubs below rather than duplicated here.
+
+server:
+  address: 'tcp://:9091'
+
+log:
+  level: 'info'
+
+totp:
+  issuer: 'authelia.${DOMAIN}'
+
+identity_validation:
+  reset_password:
+    jwt_secret: ''
+
+authentication_backend:
+  file:
+    path: '/tmp/users_database.yml'
+
+access_control:
+  default_policy: 'deny'
+  rules:
+    # TODO: Add more rules as needed, for example a `bypass` policy for
+    # publicly-reachable apps under this domain.
+    - domain: '*.${DOMAIN}'
+      policy: 'two_factor'
+
+session:
+  secret: ''
+  cookies:
+    - name: 'authelia_session'
+      domain: '${DOMAIN}'
+      authelia_url: 'https://authelia.${DOMAIN}'
+      expiration: '1 hour'
+      inactivity: '5 minutes'
+  redis:
+    host: ''
+    port: 0
+
+regulation:
+  max_retries: 3
+  find_time: '2 minutes'
+  ban_time: '5 minutes'
+
+storage:
+  encryption_key: ''
+  postgres:
+    address: ''
+    database: ''
+    username: ''
+    password: ''
+
+notifier:
+  filesystem:
+    filename: '/tmp/notification.txt'
+...
