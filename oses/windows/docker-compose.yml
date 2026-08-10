@@ -9,8 +9,14 @@ networks:
     external: true
 
 volumes:
-  windows:
-    name: "windows"
+  libvirt_data:
+    name: "libvirt_data"
+  vagrant_data:
+    name: "vagrant_data"
+  vagrant_project:
+    name: "vagrant_project"
+  libvirt_config:
+    name: "libvirt_config"
 
 services:
   windows10:
@@ -20,13 +26,17 @@ services:
     stdin_open: true
     tty: true
     privileged: true
+    cgroup: host
     networks:
       - "internal"
     cap_add:
       - "NET_ADMIN"
       - "SYS_ADMIN"
     volumes:
-      - "windows:/sys/fs/cgroup"
+      - "libvirt_data:/var/lib/libvirt"
+      - "vagrant_data:/root/.vagrant.d"
+      - "vagrant_project:/app/.vagrant"
+      - "libvirt_config:/etc/libvirt"
     devices:
       - "/dev/kvm"
       - "/dev/net/tun"
