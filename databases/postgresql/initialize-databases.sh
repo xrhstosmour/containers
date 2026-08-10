@@ -17,11 +17,12 @@ fi
 for database in $(echo "$POSTGRESQL_ADDITIONAL_DATABASES" | tr ',' ' '); do
   echo "Ensuring database '$database' exists..."
   # Double single quotes for safe interpolation into the SQL string below.
-  # Double quotes in identifiers are not escaped, as this list is
-  # operator-controlled via template.env, not external input.
   escaped_database=$(printf '%s' "$database" | sed "s/'/''/g")
+  # Same as above, plus doubled double quotes, since this one is also used
+  # as a quoted identifier in CREATE DATABASE "...".
+  escaped_identifier=$(printf '%s' "$database" | sed "s/\"/\"\"/g; s/'/''/g")
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
-    SELECT 'CREATE DATABASE "$escaped_database"'
+    SELECT 'CREATE DATABASE "$escaped_identifier"'
     WHERE NOT EXISTS (
       SELECT FROM pg_database WHERE datname = '$escaped_database'
     )\gexec
