@@ -15,6 +15,11 @@ services:
     image: "machines/filestash:latest"
     container_name: "filestash"
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256M"
     networks:
       - "internal"
     ports:
