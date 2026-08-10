@@ -33,6 +33,7 @@ services:
       - "FLOWER_BASIC_AUTH=${FLOWER_USER?Variable not set}:${FLOWER_PASSWORD?Variable not set}"
       - "SSL_CERT_FILE=/etc/flower/certificates/ca_certificate.pem"
     volumes:
+      # Copy RabbitMQ's real ca_certificate.pem here so Flower trusts it for amqps://, see certificates/template.ca_certificate.pem.
       - "./certificates:/etc/flower/certificates:ro"
       - "flower:/data"
     labels:
