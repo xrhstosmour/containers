@@ -22,9 +22,6 @@ services:
     privileged: true
     networks:
       - "internal"
-    cap_add:
-      - "NET_ADMIN"
-      - "SYS_ADMIN"
     volumes:
       - "windows:/sys/fs/cgroup"
     devices:
