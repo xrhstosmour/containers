@@ -28,5 +28,11 @@ services:
       MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD?Variable not set}"
     volumes:
       - "minio:/data"
+      # MinIO auto-enables TLS for the API and console when it finds a public.crt/private.key
+      # pair in its certs directory. Replace the "template.*" files in ./certificates with a
+      # real certificate and key (see each file for generation instructions) before deploying,
+      # the API and console ports below are published to the host and transit in cleartext
+      # until real certificates are in place.
+      - "./certificates:/root/.minio/certs:ro"
     labels:
       - "traefik.enable=false"
