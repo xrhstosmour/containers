@@ -1,3 +1,5 @@
+import logging
+
 from app.configuration import (
     DEFAULT_REDBEAT_LOCK_TIMEOUT,
     DEFAULT_REDBEAT_MAXIMUM_INTERVAL,
@@ -16,8 +18,8 @@ delete_redis_lock(lock_name=REDBEAT_LOCK_KEY)
 # Check if REDBEAT_LOCK_TIMEOUT is greater than REDBEAT_MAXIMUM_INTERVAL.
 set_default_values: bool = False
 if REDBEAT_LOCK_TIMEOUT <= REDBEAT_MAXIMUM_INTERVAL:
-    print(
-        "WARNING: REDBEAT_LOCK_TIMEOUT should be greater than"
+    logging.warning(
+        "REDBEAT_LOCK_TIMEOUT should be greater than"
         " REDBEAT_MAXIMUM_INTERVAL! Default values will be used!"
     )
     set_default_values = True
