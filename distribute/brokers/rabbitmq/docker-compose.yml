@@ -36,7 +36,7 @@ services:
       - "rabbitmq:/var/lib/rabbitmq"
       - "./configuration/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf.template:ro"
       - "./configuration/render-config.sh:/usr/local/bin/render-config.sh:ro"
-      - "./certificates:/etc/rabbitmq/certificates"
+      - "./certificates:/etc/rabbitmq/certificates:ro"
     environment:
       - "RABBITMQ_DEFAULT_USER=${RABBITMQ_USER?Variable not set}"
       - "RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD?Variable not set}"
