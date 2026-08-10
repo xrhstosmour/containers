@@ -30,3 +30,26 @@ services:
       - "minio:/data"
     labels:
       - "traefik.enable=false"
+
+  # One-shot container that creates the default bucket after MinIO is
+  # healthy. Exits after the bucket is created. Re-running it is safe
+  # (idempotent).
+  minio-init:
+    image: "minio/mc:RELEASE.2025-08-13T08-35-41Z"
+    container_name: "minio-init"
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ROOT_USER?Variable not set}"
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD?Variable not set}"
+      MINIO_API_PORT: "${MINIO_API_PORT?Variable not set}"
+      MINIO_DEFAULT_BUCKET: "${MINIO_DEFAULT_BUCKET?Variable not set}"
+    entrypoint: ["sh", "/init/create-bucket.sh"]
+    restart: "no"
+    networks:
+      - "internal"
+    volumes:
+      - "./init:/init:ro"
+    labels:
+      - "traefik.enable=false"

@@ -28,7 +28,7 @@ urlencode() {
 
 MC_USER=$(urlencode "${MINIO_ROOT_USER}")
 MC_PASSWORD=$(urlencode "${MINIO_ROOT_PASSWORD}")
-MC_HOST="http://${MC_USER}:${MC_PASSWORD}@localhost:${MINIO_API_PORT}"
+MC_HOST="http://${MC_USER}:${MC_PASSWORD}@minio:${MINIO_API_PORT}"
 mc alias set local "${MC_HOST}"
 mc mb "local/${MINIO_DEFAULT_BUCKET}" --ignore-existing
 mc anonymous set download "local/${MINIO_DEFAULT_BUCKET}"
