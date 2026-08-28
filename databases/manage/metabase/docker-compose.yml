@@ -11,7 +11,7 @@ volumes:
 
 services:
   metabase:
-    image: "metabase/metabase:v0.61.2"
+    image: "metabase/metabase:v0.62.17"
     container_name: "metabase"
     # Metabase migrates its own application database on first boot, which takes
     # a couple of minutes, so a container that is up is not yet a Metabase that
