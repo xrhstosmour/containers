@@ -13,6 +13,17 @@ services:
   metabase:
     image: "metabase/metabase:v0.61.2"
     container_name: "metabase"
+    # Metabase migrates its own application database on first boot, which takes
+    # a couple of minutes, so a container that is up is not yet a Metabase that
+    # serves. Without this, anything downstream can only see the container
+    # state, and a boot that crash-loops on the application database looks
+    # exactly like one that is still starting.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -I http://localhost:3000/api/health || exit 1"]
+      interval: "15s"
+      timeout: "5s"
+      retries: 10
+      start_period: "180s"
     restart: "unless-stopped"
     entrypoint:
       - "sh"
