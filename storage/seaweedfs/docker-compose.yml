@@ -1,0 +1,77 @@
+# S3-compatible object storage.
+#
+# SeaweedFS rather than MinIO: MinIO withdrew their community images from
+# every public registry during 2025, so `minio/minio` and `minio/mc` on
+# Docker Hub and `quay.io/minio/minio` all refuse an unauthenticated pull
+# and the service can no longer start from a clean machine. SeaweedFS is
+# Apache-2.0, actively published to Docker Hub, and speaks enough of the
+# S3 API for the usual application needs: bucket creation, object
+# put/get/delete, and presigned URLs including a response
+# content-disposition override.
+networks:
+  internal:
+    name: "${COMPOSE_PROJECT_NAME?Variable not set}-internal"
+
+volumes:
+  seaweedfs:
+    name: "${COMPOSE_PROJECT_NAME?Variable not set}-seaweedfs"
+
+services:
+  seaweedfs:
+    image: "chrislusf/seaweedfs:4.47"
+    container_name: "${COMPOSE_PROJECT_NAME?Variable not set}-seaweedfs"
+    # The identity file cannot be interpolated from the environment by
+    # SeaweedFS itself, so it is rendered first and the image's own
+    # entrypoint is handed the command below unchanged.
+    entrypoint: ["sh", "/init/render-configuration.sh"]
+    # `server` runs master, volume, filer and the S3 gateway in one
+    # process, which is what a single-node deployment wants. Only the S3
+    # gateway and the filer's web interface are published, the master
+    # and volume ports stay on the internal network.
+    command: >
+      server
+      -dir=/data
+      -s3
+      -s3.config=/etc/seaweedfs/s3.json
+    healthcheck:
+      # Two things to know. The gateway binds the container's own
+      # address rather than loopback, so `localhost` is refused and the
+      # check has to resolve the container's IP. And it answers 403 to
+      # an unsigned request, which is a healthy server refusing
+      # anonymous access, so the status line is matched rather than
+      # relying on an exit code.
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q -S -O /dev/null http://$$(hostname -i):8333/ 2>&1 | grep -qE 'HTTP/1.1 (200|403)'",
+        ]
+      interval: "10s"
+      timeout: "5s"
+      retries: 5
+      start_period: "20s"
+    restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "2G"
+    environment:
+      STORAGE_ACCESS_KEY: "${STORAGE_ACCESS_KEY?Variable not set}"
+      STORAGE_SECRET_KEY: "${STORAGE_SECRET_KEY?Variable not set}"
+    networks:
+      - "internal"
+    ports:
+      # Loopback-only, for local and tunnelled admin access, matching
+      # every other service here. The container-side ports are
+      # SeaweedFS' own defaults and are deliberately not moved: setting
+      # `-s3.port` stops the single-node master electing a raft leader,
+      # as does `-ip.bind`. Only the host side is configurable, so other
+      # containers reach the gateway at `seaweedfs:8333` over the
+      # internal network whatever the host port is.
+      - "127.0.0.1:${STORAGE_API_PORT?Variable not set}:8333"
+      - "127.0.0.1:${STORAGE_WEBUI_PORT?Variable not set}:8888"
+    volumes:
+      - "seaweedfs:/data"
+      - "./init:/init:ro"
+    labels:
+      - "traefik.enable=false"

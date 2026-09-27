@@ -24,7 +24,7 @@ This repository contains Docker Compose setups for a variety of applications, en
   - Redis Commander (`databases/manage/redis_commander`)
   - Metabase (`databases/manage/metabase`)
 - **Storage**
-  - MinIO (`storage/minio`)
+  - SeaweedFS (`storage/seaweedfs`): S3-compatible object storage
   - Filestash (`storage/filestash`)
 - **Management**
   - Dockhand (`management/services/dockhand`)
