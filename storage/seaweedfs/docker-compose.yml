@@ -10,16 +10,25 @@
 # content-disposition override.
 networks:
   internal:
-    name: "${COMPOSE_PROJECT_NAME?Variable not set}-internal"
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
 
 volumes:
   seaweedfs:
-    name: "${COMPOSE_PROJECT_NAME?Variable not set}-seaweedfs"
+    name: "seaweedfs"
 
 services:
   seaweedfs:
+    # Pinned for a security reason, not for stability. 3.97 silently
+    # ignores `ResponseContentDisposition` on a presigned URL and serves
+    # an uploaded `text/html` object as `inline`, which is what lets an
+    # uploaded HTML or SVG file execute in the viewer's origin. Anything
+    # relying on that override must re-test it before this tag moves, and
+    # must never move it backwards. There is no automated guard.
     image: "chrislusf/seaweedfs:4.47"
-    container_name: "${COMPOSE_PROJECT_NAME?Variable not set}-seaweedfs"
+    container_name: "seaweedfs"
     # The identity file cannot be interpolated from the environment by
     # SeaweedFS itself, so it is rendered first and the image's own
     # entrypoint is handed the command below unchanged.
