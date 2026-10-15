@@ -1,0 +1,53 @@
+# A static website behind Traefik, on its own host or on the API's. Its
+# router has the lowest priority, so any other router on the same host,
+# such as an API under `/api/`, wins, and a path with no file answers 404.
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+services:
+  website:
+    image: "nginxinc/nginx-unprivileged:1.29-alpine"
+    container_name: "website"
+    restart: "unless-stopped"
+    # Serves files and nothing else, so it needs no writable layer, no
+    # capabilities and no root.
+    read_only: true
+    tmpfs:
+      - "/tmp"
+    cap_drop:
+      - "ALL"
+    security_opt:
+      - "no-new-privileges:true"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "64M"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: "30s"
+      timeout: "5s"
+      retries: 3
+    networks:
+      - "internal"
+    volumes:
+      # The site's files. The default is a `website/` directory beside the
+      # `containers/` checkout this file is vendored into.
+      - "${WEBSITE_DIRECTORY:-../../../../website}:/usr/share/nginx/html:ro"
+      - "./configuration/default.conf:/etc/nginx/conf.d/default.conf:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=internal"
+      - "traefik.http.routers.website.rule=Host(`${WEBSITE_HOST:-${APP_DOMAIN?Variable not set}}`)"
+      - "traefik.http.routers.website.priority=1"
+      - "traefik.http.routers.website.entrypoints=web_secure"
+      - "traefik.http.routers.website.tls=true"
+      # `default` when the host is an IP address, strict SNI otherwise.
+      - "traefik.http.routers.website.tls.options=${TRAEFIK_TLS_OPTIONS:-tls-opts@file}"
+      # Certificates from a resolver, `le`, or empty for existing certificates.
+      - "traefik.http.routers.website.tls.certresolver=${TRAEFIK_CERTIFICATE_RESOLVER:-}"
+      - "traefik.http.services.website.loadbalancer.server.port=8080"

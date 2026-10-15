@@ -30,6 +30,7 @@ This repository contains Docker Compose setups for a variety of applications, en
   - Dockhand (`management/services/dockhand`)
 - **Web**
   - LinkStack (`web/sharing/linkstack`)
+  - Static website (`web/static/nginx`): a read-only, unprivileged `nginx` behind Traefik
 - **Distribute**
   - RabbitMQ (`distribute/brokers/rabbitmq`)
   - RedBeat (`distribute/scheduler/redbeat`)
