@@ -75,8 +75,10 @@ services:
       # Middleware for basic authentication to the dashboard.
       - "traefik.http.routers.traefik.middlewares=basic_authentication_chain@file"
       # Middleware for global redirection to https with middleware.
+      # Traefik v3 reads `HostRegexp` as a plain regular expression, the v2
+      # `{host:.+}` form only matches a host that literally starts with it.
       - "traefik.http.routers.http_catch_all.entrypoints=web"
-      - "traefik.http.routers.http_catch_all.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http_catch_all.rule=HostRegexp(`.+`)"
       - "traefik.http.routers.http_catch_all.middlewares=https_redirect_middleware"
       - "traefik.http.middlewares.https_redirect_middleware.redirectscheme.scheme=https"
       # TODO: Middleware to redirect from www.
