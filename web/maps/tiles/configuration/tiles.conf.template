@@ -1,0 +1,52 @@
+# Rendered by the image's entrypoint, which replaces the TILE_ variables
+# and leaves nginx's own alone.
+proxy_cache_path /var/cache/nginx/tiles levels=1:2 keys_zone=tiles:10m max_size=${TILE_CACHE_SIZE} inactive=30d use_temp_path=off;
+
+# Per phone, not per proxy. Only Traefik reaches this container.
+set_real_ip_from 10.0.0.0/8;
+set_real_ip_from 172.16.0.0/12;
+set_real_ip_from 192.168.0.0/16;
+real_ip_header X-Forwarded-For;
+limit_req_zone $binary_remote_addr zone=tile_clients:10m rate=30r/s;
+
+server {
+    listen 8080;
+    server_tokens off;
+    # Docker's own resolver, for the provider's host.
+    resolver 127.0.0.11 valid=300s ipv6=off;
+
+    location = /health {
+        access_log off;
+        return 204;
+    }
+
+    location ~ "^/tiles/(\d{1,2})/(\d{1,7})/(\d{1,7})\.png$" {
+        limit_req zone=tile_clients burst=200 nodelay;
+        limit_req_status 429;
+
+        # Nothing about the phone goes upstream, no address, cookie or agent.
+        proxy_pass_request_headers off;
+        proxy_set_header User-Agent "${TILE_USER_AGENT}";
+        proxy_pass ${TILE_UPSTREAM}/$1/$2/$3.png${TILE_UPSTREAM_QUERY};
+        proxy_ssl_server_name on;
+        proxy_ssl_verify on;
+        proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+
+        proxy_cache tiles;
+        proxy_cache_key $1/$2/$3;
+        proxy_cache_lock on;
+        proxy_cache_valid 200 7d;
+        proxy_cache_valid 404 1h;
+        proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+        proxy_ignore_headers Cache-Control Expires Set-Cookie;
+        proxy_hide_header Set-Cookie;
+        proxy_hide_header Cache-Control;
+
+        add_header Cache-Control "public, max-age=86400" always;
+        add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location / {
+        return 404;
+    }
+}

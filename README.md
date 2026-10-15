@@ -31,6 +31,7 @@ This repository contains Docker Compose setups for a variety of applications, en
 - **Web**
   - LinkStack (`web/sharing/linkstack`)
   - Static website (`web/static/nginx`): a read-only, unprivileged `nginx` behind Traefik
+  - Map tiles (`web/maps/tiles`): a caching `nginx` proxy serving a provider's tiles from your own domain
 - **Distribute**
   - RabbitMQ (`distribute/brokers/rabbitmq`)
   - RedBeat (`distribute/scheduler/redbeat`)

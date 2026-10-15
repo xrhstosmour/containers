@@ -1,0 +1,62 @@
+# Map tiles from the app's own domain, fetched once from a tile provider and
+# cached. Phones never talk to the provider, so it sees neither their
+# addresses nor where they look, and its key stays on the server.
+networks:
+  internal:
+    name: "internal"
+    # External means the container will be accessible from other containers in the same network.
+    # If you want to isolate the container create a new network, with different name for each container and without being external.
+    external: true
+
+volumes:
+  tiles-cache:
+    name: "tiles-cache"
+
+services:
+  tiles:
+    image: "nginxinc/nginx-unprivileged:1.29-alpine"
+    container_name: "tiles"
+    restart: "unless-stopped"
+    read_only: true
+    tmpfs:
+      - "/tmp"
+      # The entrypoint renders the configuration template here at start,
+      # as the image's unprivileged user.
+      - "/etc/nginx/conf.d:uid=101,gid=101"
+    cap_drop:
+      - "ALL"
+    security_opt:
+      - "no-new-privileges:true"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "64M"
+    environment:
+      # The provider's tile root, without the trailing `/{z}/{x}/{y}.png`.
+      TILE_UPSTREAM: "${TILE_UPSTREAM:-https://tile.openstreetmap.org}"
+      # Appended to every upstream request, for the provider's key.
+      TILE_UPSTREAM_QUERY: "${TILE_UPSTREAM_QUERY:-}"
+      TILE_CACHE_SIZE: "${TILE_CACHE_SIZE:-2g}"
+      TILE_USER_AGENT: "${TILE_USER_AGENT:-${COMPOSE_PROJECT_NAME:-containers} tile cache}"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/health"]
+      interval: "30s"
+      timeout: "5s"
+      retries: 3
+    networks:
+      - "internal"
+    volumes:
+      - "tiles-cache:/var/cache/nginx"
+      - "./configuration/tiles.conf.template:/etc/nginx/templates/tiles.conf.template:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=internal"
+      - "traefik.http.routers.tiles.rule=Host(`${TILES_HOST:-${APP_DOMAIN?Variable not set}}`) && PathPrefix(`/tiles/`)"
+      - "traefik.http.routers.tiles.entrypoints=web_secure"
+      - "traefik.http.routers.tiles.tls=true"
+      # `default` when the host is an IP address, strict SNI otherwise.
+      - "traefik.http.routers.tiles.tls.options=${TRAEFIK_TLS_OPTIONS:-tls-opts@file}"
+      # Certificates from a resolver, `le`, or empty for existing certificates.
+      - "traefik.http.routers.tiles.tls.certresolver=${TRAEFIK_CERTIFICATE_RESOLVER:-}"
+      - "traefik.http.services.tiles.loadbalancer.server.port=8080"
