@@ -52,8 +52,10 @@ services:
       - "--providers.file.watch=true"
       - "--providers.file.directory=/configuration"
     volumes:
-      # Allows Traefik can listen to the Docker events.
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      # Allows Traefik can listen to the Docker events. Rootless Docker keeps
+      # its socket under the user's runtime directory, set `DOCKER_SOCKET`
+      # to it, for example `/run/user/1001/docker.sock`.
+      - "${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock:ro"
       # Mount the dynamic configuration folder.
       - "./configuration:/configuration:ro"
       # Mount the volume for certificates.
