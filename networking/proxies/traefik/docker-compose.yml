@@ -40,10 +40,13 @@ services:
       # Define entrypoints.
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web_secure.address=:443"
-      # Uncomment the below lines to enable TLS/SSL from a certificate resolver if you are not going to use existing certificates.
-      # - "--certificatesresolvers.le.acme.email=${TRAEFIK_EMAIL?Variable not set}"
-      # - "--certificatesresolvers.le.acme.storage=/certificates/acme.json"
-      # - "--certificatesResolvers.le.acme.tlsChallenge=true"
+      # A Let's Encrypt resolver named `le`. It only issues certificates for
+      # routers that name it, so it is safe to define on a machine using
+      # existing certificates. The email is optional.
+      - "--certificatesresolvers.le.acme.email=${TRAEFIK_EMAIL:-}"
+      - "--certificatesresolvers.le.acme.storage=/certificates/acme.json"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+      - "--certificatesresolvers.le.acme.keytype=EC256"
       # Load dynamic configuration from one or more .yml files.
       - "--providers.file=true"
       - "--providers.file.watch=true"
@@ -70,8 +73,8 @@ services:
       - "traefik.http.routers.traefik.entrypoints=web_secure"
       - "traefik.http.routers.traefik.tls=true"
       - "traefik.http.routers.traefik.tls.options=tls-opts@file"
-      # Uncomment the below line to enable TLS/SSL from a certificate resolver.
-      # - "traefik.http.routers.traefik.tls.certresolver=${TRAEFIK_CERTIFICATE_RESOLVER?Variable not set}"
+      # Certificates from a resolver, `le`, or empty for existing certificates.
+      - "traefik.http.routers.traefik.tls.certresolver=${TRAEFIK_CERTIFICATE_RESOLVER:-}"
       # Middleware for basic authentication to the dashboard.
       - "traefik.http.routers.traefik.middlewares=basic_authentication_chain@file"
       # Middleware for global redirection to https with middleware.
