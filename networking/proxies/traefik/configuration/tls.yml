@@ -2,9 +2,11 @@
 # https://ssl-config.mozilla.org/#server=traefik&version=2.10.3&config=intermediate&guideline=5.7
 tls:
   options:
-    tls-opts:
+    # Answers handshakes without a server name, which is every request to
+    # an IP address, and routers set to `default`. Strict SNI here would
+    # refuse those, and any other option on their router answers 421.
+    default: &hardened
       minVersion: "VersionTLS12"
-      sniStrict: true
       cipherSuites:
         # Recommended ciphers for TLSv1.3.
         - "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
@@ -20,6 +22,9 @@ tls:
         - "TLS_CHACHA20_POLY1305_SHA256"
         # Extra cipher when client is doing version fallback, according to RFC 7507.
         - "TLS_FALLBACK_SCSV"
+    tls-opts:
+      <<: *hardened
+      sniStrict: true
 
   # Uncomment the below lines, to use existing certificates.
   # certificates:

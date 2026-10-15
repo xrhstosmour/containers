@@ -74,7 +74,8 @@ services:
       # SSL/TLS configuration.
       - "traefik.http.routers.traefik.entrypoints=web_secure"
       - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.tls.options=tls-opts@file"
+      # `default` when the host is an IP address, strict SNI otherwise.
+      - "traefik.http.routers.traefik.tls.options=${TRAEFIK_TLS_OPTIONS:-tls-opts@file}"
       # Certificates from a resolver, `le`, or empty for existing certificates.
       - "traefik.http.routers.traefik.tls.certresolver=${TRAEFIK_CERTIFICATE_RESOLVER:-}"
       # Middleware for basic authentication to the dashboard.
