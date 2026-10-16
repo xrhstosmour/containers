@@ -1,6 +1,6 @@
 # Map tiles from the app's own domain, fetched once from a tile provider and
 # cached. Phones never talk to the provider, so it sees neither their
-# addresses nor where they look, and its key stays on the server.
+# addresses nor where they look.
 networks:
   internal:
     name: "internal"
@@ -33,10 +33,8 @@ services:
           cpus: "0.25"
           memory: "64M"
     environment:
-      # The provider's tile root, without the trailing `/{z}/{x}/{y}.png`.
-      TILE_UPSTREAM: "${TILE_UPSTREAM:-https://tile.openstreetmap.org}"
-      # Appended to every upstream request, for the provider's key.
-      TILE_UPSTREAM_QUERY: "${TILE_UPSTREAM_QUERY:-}"
+      # The provider's root, serving TileJSON at `/<tileset>` and tiles below it.
+      TILE_UPSTREAM: "${TILE_UPSTREAM:-https://tiles.openfreemap.org}"
       TILE_CACHE_SIZE: "${TILE_CACHE_SIZE:-2g}"
       TILE_USER_AGENT: "${TILE_USER_AGENT:-${COMPOSE_PROJECT_NAME:-containers} tile cache}"
     healthcheck:

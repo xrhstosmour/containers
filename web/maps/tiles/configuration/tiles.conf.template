@@ -20,29 +20,52 @@ server {
         return 204;
     }
 
-    location ~ "^/tiles/(\d{1,2})/(\d{1,7})/(\d{1,7})\.png$" {
+    # Shared by both locations below. Nothing about the phone goes
+    # upstream, no address, cookie or agent.
+    proxy_pass_request_headers off;
+    proxy_set_header User-Agent "${TILE_USER_AGENT}";
+    proxy_ssl_server_name on;
+    proxy_ssl_verify on;
+    proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+    proxy_cache tiles;
+    proxy_cache_key $uri;
+    proxy_cache_lock on;
+    proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+    proxy_ignore_headers Cache-Control Expires Set-Cookie;
+    proxy_hide_header Set-Cookie;
+    proxy_hide_header Cache-Control;
+    proxy_hide_header X-Content-Type-Options;
+
+    # The tileset's TileJSON, which names the current tile URLs. The
+    # provider's host in it becomes ours, so phones fetch tiles from here.
+    location ~ "^/tiles/([a-z0-9_-]{1,40})$" {
         limit_req zone=tile_clients burst=200 nodelay;
         limit_req_status 429;
 
-        # Nothing about the phone goes upstream, no address, cookie or agent.
-        proxy_pass_request_headers off;
-        proxy_set_header User-Agent "${TILE_USER_AGENT}";
-        proxy_pass ${TILE_UPSTREAM}/$1/$2/$3.png${TILE_UPSTREAM_QUERY};
-        proxy_ssl_server_name on;
-        proxy_ssl_verify on;
-        proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+        proxy_pass ${TILE_UPSTREAM}/$1;
+        # Short, the provider moves the tile URLs to a new version weekly.
+        proxy_cache_valid 200 1h;
+        proxy_cache_valid 404 1m;
 
-        proxy_cache tiles;
-        proxy_cache_key $1/$2/$3;
-        proxy_cache_lock on;
-        proxy_cache_valid 200 7d;
+        sub_filter_types application/json;
+        sub_filter_once off;
+        sub_filter "${TILE_UPSTREAM}/" "https://$host/tiles/";
+
+        add_header Cache-Control "public, max-age=3600" always;
+        add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    # The tiles themselves, vector or raster, under a versioned path that
+    # never changes its content.
+    location ~ "^/tiles/([a-z0-9_-]{1,40}(?:/[a-z0-9_-]{1,40})?/\d{1,2}/\d{1,7}/\d{1,7}\.(?:pbf|png))$" {
+        limit_req zone=tile_clients burst=200 nodelay;
+        limit_req_status 429;
+
+        proxy_pass ${TILE_UPSTREAM}/$1;
+        proxy_cache_valid 200 30d;
         proxy_cache_valid 404 1h;
-        proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
-        proxy_ignore_headers Cache-Control Expires Set-Cookie;
-        proxy_hide_header Set-Cookie;
-        proxy_hide_header Cache-Control;
 
-        add_header Cache-Control "public, max-age=86400" always;
+        add_header Cache-Control "public, max-age=604800" always;
         add_header X-Content-Type-Options "nosniff" always;
     }
 
