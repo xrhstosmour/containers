@@ -37,7 +37,7 @@ volumes:
 services:
   # Standalone Redis (default, no profile needed).
   redis:
-    image: "redis:7.4-alpine"
+    image: "redis:8.10-alpine"
     container_name: "redis"
     # Explaination of the command:
     # --appendonly yes: This enables AOF persistence, which logs every write operation. It offers a better durability guarantee compared to RDB alone, as you can survive crashes with minimal data loss.
@@ -73,7 +73,7 @@ services:
   # Internal-only: no host port mapping needed since the app container
   # connects via the Docker internal network.
   redis-cluster-node-1:
-    image: "redis:7.4-alpine"
+    image: "redis:8.10-alpine"
     container_name: "redis-cluster-node-1"
     profiles: ["cluster"]
     command: >
@@ -108,7 +108,7 @@ services:
       - "traefik.enable=false"
 
   redis-cluster-node-2:
-    image: "redis:7.4-alpine"
+    image: "redis:8.10-alpine"
     container_name: "redis-cluster-node-2"
     profiles: ["cluster"]
     command: >
@@ -143,7 +143,7 @@ services:
       - "traefik.enable=false"
 
   redis-cluster-node-3:
-    image: "redis:7.4-alpine"
+    image: "redis:8.10-alpine"
     container_name: "redis-cluster-node-3"
     profiles: ["cluster"]
     command: >
@@ -178,7 +178,7 @@ services:
       - "traefik.enable=false"
 
   redis-cluster-node-4:
-    image: "redis:7.4-alpine"
+    image: "redis:8.10-alpine"
     container_name: "redis-cluster-node-4"
     profiles: ["cluster"]
     command: >
@@ -213,7 +213,7 @@ services:
       - "traefik.enable=false"
 
   redis-cluster-node-5:
-    image: "redis:7.4-alpine"
+    image: "redis:8.10-alpine"
     container_name: "redis-cluster-node-5"
     profiles: ["cluster"]
     command: >
@@ -248,7 +248,7 @@ services:
       - "traefik.enable=false"
 
   redis-cluster-node-6:
-    image: "redis:7.4-alpine"
+    image: "redis:8.10-alpine"
     container_name: "redis-cluster-node-6"
     profiles: ["cluster"]
     command: >
@@ -285,7 +285,7 @@ services:
   # One-shot container that forms the cluster after all nodes are healthy.
   # Exits after the cluster is created. Re-running it is safe (idempotent).
   redis-cluster-init:
-    image: "redis:7.4-alpine"
+    image: "redis:8.10-alpine"
     container_name: "redis-cluster-init"
     profiles: ["cluster"]
     depends_on:
