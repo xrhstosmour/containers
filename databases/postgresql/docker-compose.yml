@@ -14,6 +14,11 @@ volumes:
 services:
   postgresql:
     image: "postgres:16-alpine"
+    # The image's own postgres user, so the server never starts as root and
+    # the entrypoint skips `gosu`, whose Go runtime is the image's only
+    # scanned vulnerability. A volume first created as root already belongs
+    # to it.
+    user: "70:70"
     container_name: "postgresql"
     healthcheck:
       # The port is interpolated by Compose, the same way `command` below does
