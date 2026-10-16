@@ -10,7 +10,7 @@ networks:
 
 services:
   website:
-    image: "nginxinc/nginx-unprivileged:1.29-alpine"
+    image: "nginxinc/nginx-unprivileged:1.30-alpine"
     container_name: "website"
     restart: "unless-stopped"
     # Serves files and nothing else, so it needs no writable layer, no

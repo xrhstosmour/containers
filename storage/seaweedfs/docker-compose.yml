@@ -27,7 +27,7 @@ services:
     # uploaded HTML or SVG file execute in the viewer's origin. Anything
     # relying on that override must re-test it before this tag moves, and
     # must never move it backwards. There is no automated guard.
-    image: "chrislusf/seaweedfs:4.47"
+    image: "chrislusf/seaweedfs:4.48"
     container_name: "seaweedfs"
     # The identity file cannot be interpolated from the environment by
     # SeaweedFS itself, so it is rendered first and the image's own
