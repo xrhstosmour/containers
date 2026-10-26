@@ -30,8 +30,11 @@ services:
     networks:
       - "internal"
     ports:
-      - "${RABBITMQ_PORT?Variable not set}:${RABBITMQ_PORT?Variable not set}"
-      - "${RABBITMQ_MANAGEMENT_PORT?Variable not set}:${RABBITMQ_MANAGEMENT_PORT?Variable not set}"
+      # Loopback-only: other containers reach the broker over the `internal`
+      # Docker network, not through the published host ports, so these are for
+      # local/tunnelled admin access only, like `databases/postgresql`.
+      - "127.0.0.1:${RABBITMQ_PORT?Variable not set}:${RABBITMQ_PORT?Variable not set}"
+      - "127.0.0.1:${RABBITMQ_MANAGEMENT_PORT?Variable not set}:${RABBITMQ_MANAGEMENT_PORT?Variable not set}"
     volumes:
       - "rabbitmq:/var/lib/rabbitmq"
       - "./configuration/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf.template:ro"
