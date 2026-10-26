@@ -25,7 +25,8 @@ services:
     networks:
       - "internal"
     ports:
-      - "${DOCKHAND_PORT?Variable not set}:3000"
+      # Loopback-only, for local/tunnelled admin access, like `databases/postgresql`.
+      - "127.0.0.1:${DOCKHAND_PORT?Variable not set}:3000"
     volumes:
       - "dockhand:/app/data"
     labels:

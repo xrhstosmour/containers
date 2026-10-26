@@ -28,7 +28,8 @@ services:
     networks:
       - "internal"
     ports:
-      - "${FILESTASH_PORT?Variable not set}:8334"
+      # Loopback-only, for local/tunnelled admin access, like `databases/postgresql`.
+      - "127.0.0.1:${FILESTASH_PORT?Variable not set}:8334"
     environment:
       - "APPLICATION_URL=${FILESTASH_APPLICATION_URL:-}"
     volumes:

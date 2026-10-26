@@ -17,7 +17,8 @@ services:
     networks:
       - "internal"
     ports:
-      - "${UPTIME_KUMA_PORT?Variable not set}:3001"
+      # Loopback-only, for local/tunnelled admin access, like `databases/postgresql`.
+      - "127.0.0.1:${UPTIME_KUMA_PORT?Variable not set}:3001"
     volumes:
       - "uptime-kuma:/app/data"
     labels:

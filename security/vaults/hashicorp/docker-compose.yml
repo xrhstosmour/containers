@@ -37,7 +37,8 @@ services:
       - "IPC_LOCK"
     ports:
       # The container always listens on 8200, see `template.hcl`, only the host side is configurable.
-      - "${HASHICORP_PORT?Variable not set}:8200"
+      # Loopback-only, for local/tunnelled admin access, like `databases/postgresql`.
+      - "127.0.0.1:${HASHICORP_PORT?Variable not set}:8200"
     volumes:
       - "./template.hcl:/vault/config/config.hcl:ro"
       - "./certificates:/vault/certificates:ro"
