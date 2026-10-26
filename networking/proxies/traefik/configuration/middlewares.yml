@@ -6,11 +6,18 @@ http:
         usersFile: "/run/secrets/htpasswd"
         realm: "Proxy Basic Authentication"
 
-    # Rate limit middleware.
+    # Rate limit middleware, used by the basic authentication chain in front of
+    # the Traefik dashboard. A page load fires a few dozen requests at once,
+    # which the burst absorbs, the average is what a person can keep up. IPv6
+    # clients are counted per /64, the block a subscriber holds, not per
+    # address. Requires Traefik v3.1 or later.
     rate_limit_middleware:
       rateLimit:
-        average: 100
+        average: 20
         burst: 50
+        sourceCriterion:
+          ipStrategy:
+            ipv6Subnet: 64
 
     # HTTPS redirect middleware.
     https_redirect_middleware:
