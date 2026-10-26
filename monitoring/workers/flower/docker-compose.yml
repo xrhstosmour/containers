@@ -26,7 +26,8 @@ services:
     networks:
       - "internal"
     ports:
-      - "${FLOWER_PORT?Variable not set}:${FLOWER_PORT?Variable not set}"
+      # Loopback-only, for local/tunnelled admin access, like `databases/postgresql`.
+      - "127.0.0.1:${FLOWER_PORT?Variable not set}:${FLOWER_PORT?Variable not set}"
     environment:
       - "CELERY_BROKER_URL=amqps://${RABBITMQ_USER?Variable not set}:${RABBITMQ_PASSWORD?Variable not set}@${RABBITMQ_HOST?Variable not set}:${RABBITMQ_PORT?Variable not set}//"
       - "FLOWER_PORT=${FLOWER_PORT?Variable not set}"

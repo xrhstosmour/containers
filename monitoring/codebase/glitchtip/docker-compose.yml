@@ -38,7 +38,8 @@ services:
     networks:
       - "internal"
     ports:
-      - "${GLITCHTIP_PORT?Variable not set}:8000"
+      # Loopback-only, for local/tunnelled admin access, like `databases/postgresql`.
+      - "127.0.0.1:${GLITCHTIP_PORT?Variable not set}:8000"
     environment:
       - "SECRET_KEY=${SECRET_KEY?Variable not set}"
       - "DATABASE_URL=${DATABASE_URL?Variable not set}"
