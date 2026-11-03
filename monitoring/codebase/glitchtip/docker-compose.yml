@@ -25,7 +25,7 @@ services:
     # `postgresql` and `redis` live in separate docker compose projects, so
     # they cannot be referenced via `depends_on`. Wait for them by hand
     # instead, matching the pattern used in `distribute/scheduler/redbeat`.
-    # Redis is waited on at the address inside `REDIS_URL`, the one GlitchTip connects to.
+    # Redis is waited on at the address inside `VALKEY_URL`, the one GlitchTip connects to.
     # `REDIS_HOST` is not used, a project often sets it for code running on the host,
     # where it is `localhost`, which this container can never reach.
     # Database migrations run automatically on startup since GlitchTip 6.
@@ -37,7 +37,7 @@ services:
           echo "Waiting for postgresql...";
           sleep 2;
         done &&
-        until python3 -c "import os, socket, urllib.parse; url = urllib.parse.urlparse(os.environ['REDIS_URL']); socket.create_connection((url.hostname, url.port or 6379), 2).close()" 2>/dev/null; do
+        until python3 -c "import os, socket, urllib.parse; url = urllib.parse.urlparse(os.environ['VALKEY_URL']); socket.create_connection((url.hostname, url.port or 6379), 2).close()" 2>/dev/null; do
           echo "Waiting for redis...";
           sleep 2;
         done &&
@@ -64,7 +64,8 @@ services:
       - "GRANIAN_WORKERS_MAX_RSS=256"
       - "SECRET_KEY=${SECRET_KEY?Variable not set}"
       - "DATABASE_URL=${DATABASE_URL?Variable not set}"
-      - "REDIS_URL=${REDIS_URL?Variable not set}"
+      # Valkey is GlitchTip 6's name for it, `REDIS_URL` is only kept working for compatibility.
+      - "VALKEY_URL=${VALKEY_URL?Variable not set}"
       - "ENABLE_USER_REGISTRATION=${ENABLE_USER_REGISTRATION?Variable not set}"
       - "DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL?Variable not set}"
       # Without `EMAIL_URL` alert and password reset emails never leave the container, and
