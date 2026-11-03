@@ -64,5 +64,9 @@ services:
       - "REDIS_URL=${REDIS_URL?Variable not set}"
       - "ENABLE_USER_REGISTRATION=${ENABLE_USER_REGISTRATION?Variable not set}"
       - "DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL?Variable not set}"
+      # Without `EMAIL_URL` alert and password reset emails never leave the container, and
+      # without `GLITCHTIP_DOMAIN` the DSNs and links in the interface use the wrong host.
+      - "EMAIL_URL=${EMAIL_URL?Variable not set}"
+      - "GLITCHTIP_DOMAIN=${GLITCHTIP_DOMAIN?Variable not set}"
     labels:
       - "traefik.enable=false"
