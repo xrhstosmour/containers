@@ -6,13 +6,26 @@ networks:
     external: true
 
 services:
+  # One container runs the web server and the background worker (`all_in_one`), instead
+  # of a separate web and `celery` worker pair. Measured idle: about 200 MiB, against
+  # about 1.2 GiB for the two `v4.0` containers. This trades process isolation for
+  # memory, a task burst now shares the process that answers the healthcheck.
   glitchtip:
-    image: "glitchtip/glitchtip:v4.0"
+    # An existing `v4` database must first be migrated by a `5.x` image, GlitchTip does
+    # not support going from `4.x` straight to `6.x`. Take a `pg_dump` before that.
+    image: "glitchtip/glitchtip:6.2.6"
     container_name: "glitchtip"
     restart: "unless-stopped"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          # Matches the 512 MB the GlitchTip documentation recommends.
+          memory: "512M"
     # `postgresql` and `redis` live in separate docker compose projects, so
     # they cannot be referenced via `depends_on`. Wait for them by hand
     # instead, matching the pattern used in `distribute/scheduler/redbeat`.
+    # Database migrations run automatically on startup since GlitchTip 6.
     command:
       - "bash"
       - "-c"
@@ -25,7 +38,6 @@ services:
           echo "Waiting for redis...";
           sleep 2;
         done &&
-        ./manage.py migrate --noinput &&
         ./bin/start.sh
     healthcheck:
       test:
@@ -41,44 +53,20 @@ services:
       # Loopback-only, for local/tunnelled admin access, like `databases/postgresql`.
       - "127.0.0.1:${GLITCHTIP_PORT?Variable not set}:8000"
     environment:
+      - "SERVER_ROLE=all_in_one"
+      # The recycle limit applies per web worker, so keep one worker and half of the memory
+      # limit. GlitchTip defaults to no less than 1024 MiB, which is above the limit, so
+      # the worker would be killed by the kernel before it is ever recycled.
+      - "GRANIAN_WORKERS=1"
+      - "GRANIAN_WORKERS_MAX_RSS=256"
       - "SECRET_KEY=${SECRET_KEY?Variable not set}"
       - "DATABASE_URL=${DATABASE_URL?Variable not set}"
       - "REDIS_URL=${REDIS_URL?Variable not set}"
       - "ENABLE_USER_REGISTRATION=${ENABLE_USER_REGISTRATION?Variable not set}"
       - "DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL?Variable not set}"
-    labels:
-      - "traefik.enable=false"
-
-  glitchtip-worker:
-    image: "glitchtip/glitchtip:v4.0"
-    container_name: "glitchtip-worker"
-    restart: "unless-stopped"
-    depends_on:
-      glitchtip:
-        condition: service_healthy
-    networks:
-      - "internal"
-    # `postgresql` and `redis` live in separate docker compose projects, so
-    # they cannot be referenced via `depends_on`. Wait for them by hand
-    # instead, matching the pattern used in `distribute/scheduler/redbeat`.
-    command:
-      - "bash"
-      - "-c"
-      - >
-        until (echo > /dev/tcp/${POSTGRESQL_HOST?Variable not set}/${POSTGRESQL_PORT?Variable not set}) 2>/dev/null; do
-          echo "Waiting for postgresql...";
-          sleep 2;
-        done &&
-        until (echo > /dev/tcp/${REDIS_HOST?Variable not set}/${REDIS_PORT?Variable not set}) 2>/dev/null; do
-          echo "Waiting for redis...";
-          sleep 2;
-        done &&
-        ./bin/run-celery-with-beat.sh
-    environment:
-      - "SECRET_KEY=${SECRET_KEY?Variable not set}"
-      - "DATABASE_URL=${DATABASE_URL?Variable not set}"
-      - "REDIS_URL=${REDIS_URL?Variable not set}"
-      - "ENABLE_USER_REGISTRATION=${ENABLE_USER_REGISTRATION?Variable not set}"
-      - "DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL?Variable not set}"
+      # Without `EMAIL_URL` alert and password reset emails never leave the container, and
+      # without `GLITCHTIP_DOMAIN` the DSNs and links in the interface use the wrong host.
+      - "EMAIL_URL=${EMAIL_URL?Variable not set}"
+      - "GLITCHTIP_DOMAIN=${GLITCHTIP_DOMAIN?Variable not set}"
     labels:
       - "traefik.enable=false"
