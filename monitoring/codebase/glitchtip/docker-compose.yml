@@ -25,6 +25,9 @@ services:
     # `postgresql` and `redis` live in separate docker compose projects, so
     # they cannot be referenced via `depends_on`. Wait for them by hand
     # instead, matching the pattern used in `distribute/scheduler/redbeat`.
+    # Redis is waited on at the address inside `REDIS_URL`, the one GlitchTip connects to.
+    # `REDIS_HOST` is not used, a project often sets it for code running on the host,
+    # where it is `localhost`, which this container can never reach.
     # Database migrations run automatically on startup since GlitchTip 6.
     command:
       - "bash"
@@ -34,7 +37,7 @@ services:
           echo "Waiting for postgresql...";
           sleep 2;
         done &&
-        until (echo > /dev/tcp/${REDIS_HOST?Variable not set}/${REDIS_PORT?Variable not set}) 2>/dev/null; do
+        until python3 -c "import os, socket, urllib.parse; url = urllib.parse.urlparse(os.environ['REDIS_URL']); socket.create_connection((url.hostname, url.port or 6379), 2).close()" 2>/dev/null; do
           echo "Waiting for redis...";
           sleep 2;
         done &&
